@@ -1,57 +1,49 @@
 ---
 name: cleanup
 description: >-
-  Remove dead code and unnecessary code after changes. Use when the user runs
-  /cleanup (staged changes) or /cleanup branch (branch vs main/master).
+  Remove dead code and other cruft left behind by recent changes, scoped to
+  staged changes, the current branch, or a user-specified focus.
 disable-model-invocation: true
 ---
+
 # Cleanup
 
 Post-change cleanup. Remove dead code and unnecessary code introduced or left behind by recent work.
 
 **Hard rules:** Do not `git add` or `git commit`. Leave all edits unstaged.
 
-## Parse
-
-- `/cleanup` — scope is the **staging area** (staged changes only).
-- `/cleanup branch` — scope is the **current branch** compared against `main` or `master`.
-
-```
-Usage:
-  /cleanup         — clean up dead/unnecessary code in staged changes
-  /cleanup branch  — clean up dead/unnecessary code across the branch vs main/master
-```
-
 ## Step 1: Determine scope
 
-### `/cleanup` (staged)
+- **`/cleanup`** — scope is the **staging area** (staged changes only).
 
-```bash
-git diff --cached --name-only
-git diff --cached
-```
+  ```bash
+  git diff --cached --name-only
+  git diff --cached
+  ```
 
-If nothing is staged, tell the user and stop.
+  If nothing is staged, tell the user and stop.
 
-### `/cleanup branch`
+- **`/cleanup branch`** — scope is the **current branch** compared against `main` or `master`.
 
-Resolve the base branch:
+  ```bash
+  git rev-parse --verify main 2>/dev/null && echo main
+  git rev-parse --verify master 2>/dev/null && echo master
+  ```
 
-```bash
-git rev-parse --verify main 2>/dev/null && echo main
-git rev-parse --verify master 2>/dev/null && echo master
-```
+  Prefer `main` when both exist. If neither exists, ask the user which base branch to use.
 
-Prefer `main` when both exist. If neither exists, ask the user which base branch to use.
+  ```bash
+  git diff --name-only <base>...HEAD
+  git diff <base>...HEAD
+  ```
 
-```bash
-git diff --name-only <base>...HEAD
-git diff <base>...HEAD
-```
+  If the diff is empty, tell the user and stop.
 
-If the diff is empty, tell the user and stop.
+- **`/cleanup [...arguments]`** — anything else typed is a **specific instruction**, not a keyword: a path (`src/components/`), a file glob, a category ("only unused imports"), or a target ("the auth module", "branch, focus on the api layer"). Resolve scope the same way as above — check the arguments for a `branch`/base-ref mention, default to staged if none — then narrow that scope's diff to what the arguments describe, and use it to focus Step 2 and Step 3 on what was asked. If the arguments reference files or areas outside the diff, tell the user those are out of scope and stop, or ask which scope they meant.
 
 ## Step 2: Identify cleanup targets
+
+If the user gave arguments, prioritize what they asked for — treat their wording as the primary filter for what counts as a cleanup target, and only fall back to the general categories below if they didn't specify.
 
 Within scope, look for:
 
@@ -96,7 +88,7 @@ Before finishing:
 
 Summarize briefly:
 
-- Scope used (staged vs branch + base)
+- Scope used (staged vs branch + base), and any user-specified focus applied
 - Files touched
 - What was removed and why (group by category)
 - Anything left intentionally or needing user judgment
