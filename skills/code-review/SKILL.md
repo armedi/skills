@@ -1,0 +1,7 @@
+---
+name: code-review
+description: Read-only code review. Findings by severity; no edits unless asked.
+disable-model-invocation: true
+---
+
+Review the relevant code with a code review mindset. Prioritize bugs, behavioral regressions, security issues, and missing tests. Findings must be the primary focus, ordered by severity. Do not make code changes unless the user explicitly asks for them.

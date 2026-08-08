@@ -1,7 +1,7 @@
 ---
 name: simplify
 description: >-
-  Simplify the scoped code by using parallel read-only review agents, then make targeted cleanup fixes yourself.
+  Scoped simplify via parallel review agents, then targeted cleanup.
 disable-model-invocation: true
 ---
 
