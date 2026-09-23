@@ -1,6 +1,6 @@
 ---
 name: cleanup
-description: Remove dead code and other cruft from a diff, or from a project's current state.
+description: Remove dead code, simplify code paths, and clear other cruft from a diff, or from a project's current state.
 argument-hint: "[...<range|path|focus>]"
 disable-model-invocation: true
 ---
@@ -25,6 +25,7 @@ An argument that names a kind of cruft is a focus and replaces the list below. A
 - Unreferenced files and barrels, including empty stubs
 - Duplicate helpers, folded into the existing one
 - One-off helpers with a single in-scope caller, inlined there
+- Duplicate code paths, collapsed into one (near-identical branches, repeated reads of the same value, thin wrappers over an existing reader)
 
 In a diff, only cruft the change introduced or left behind.
 
@@ -32,7 +33,7 @@ Delete code only when a repo search shows it is unused. Keep public or compatibi
 
 ## Edit
 
-Change only those removals and the call sites they affect. Leave formatting and names alone.
+Change only those removals and simplifications and the call sites they affect. Leave formatting and names alone. Keep behavior identical across every branch the simplification touches.
 
 Run the relevant linters or tests and fix failures the edit caused.
 
@@ -40,6 +41,6 @@ Run the relevant linters or tests and fix failures the edit caused.
 
 - Scope (diff or tree) and any focus
 - Files touched
-- What you removed or inlined, and why
+- What you removed, inlined, or simplified, and why
 - What you kept on purpose, or could not decide
 - Checks you ran, and any failure or check you could not run
