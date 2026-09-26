@@ -2,7 +2,6 @@
 name: learn
 description: |
   Use this skill when the user wants intellectual understanding — learning how or why something works, not getting a task done or soliciting model's judgment.
-license: This content is from the “Learn” skill in the Claude desktop app. For the original license, open the app.
 disable-model-invocation: true
 ---
  
