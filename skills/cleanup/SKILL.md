@@ -1,23 +1,20 @@
 ---
 name: cleanup
-description: Remove dead code, simplify code paths, and clear other cruft from a diff, or from a project's current state.
-argument-hint: "[...<range|path|focus>]"
-disable-model-invocation: true
+description: Cleanup cruft from a diff, or from a project's current state.
+argument-hint: "([<range>] [<path>...] | snapshot [<path>...]) [focus: <text>]"
 ---
 
 # Cleanup
 
-Leave every edit unstaged, and do not commit.
-
 ## Scope
 
-**Diff** (default). Take uncommitted changes against `HEAD`, so staged work is included. A range argument replaces that diff. Bare `main` or `master` means `<base>...HEAD`; prefer `main` when both exist. A path or glob limits you to matching files in the diff. Empty diff: stop. If an explicit path matches nothing in the diff, ask which scope to use.
+**Diff** (default). Take uncommitted changes against `HEAD`, so staged work is included. A range argument (diff scope only, never with `snapshot`) replaces that diff. Bare `main` or `master` means `<base>...HEAD`; prefer `main` when both exist. A path or glob limits you to matching files in the diff. Empty diff: stop. If an explicit path matches nothing in the diff, ask which scope to use.
 
-**Tree.** The word "snapshot" selects this scope: that path's current contents. If they name no path, ask which files.
+**Tree.** The word "snapshot" as the first argument selects this scope and defaults to the full state of the current codebase. A path limits scope to that path's current contents.
 
 ## Cruft
 
-An argument that names a kind of cruft is a focus and replaces the list below. A range, a path, or "snapshot" is not a focus. With no focus, clean:
+Focus is free text after `focus:` and replaces the list below. With no focus, clean:
 
 - Unused symbols (imports, bindings, types, exports, re-exports) and uncalled test scaffolding
 - Commented-out code and unreachable branches
@@ -33,9 +30,9 @@ Delete code only when a repo search shows it is unused. Keep public or compatibi
 
 ## Edit
 
-Change only those removals and simplifications and the call sites they affect. Leave formatting and names alone. Keep behavior identical across every branch the simplification touches.
+Change only those removals and simplifications and the call sites they affect. Keep formatting and names unchanged. Keep behavior identical across every branch the simplification touches. Keep every edit unstaged; never commit.
 
-Run the relevant linters or tests and fix failures the edit caused.
+Run the linters or tests covering touched files and fix failures the edit caused.
 
 ## Report
 
