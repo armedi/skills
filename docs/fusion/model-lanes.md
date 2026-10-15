@@ -5,10 +5,7 @@ Evidence behind the `fusion` skill's lanes table in
 
 The skill runs on the user's personal subscriptions: **Claude Pro** (Claude Code), **ChatGPT Plus**
 (Codex), and **the X Subscription** (Grok Build, plus Cursor access to the Grok and Composer
-models; it replaced SuperGrok on 2026-10-13 [U4]). The
-previous work setup (GitHub Copilot credits, OpenCode `compass`) is gone, and so are
-gemini-3.8-flash and deepseek-v4.1-flash. gpt-6-astra is available on Plus but excluded by the user
-as too expensive in Codex usage.
+models; it replaced SuperGrok on 2026-10-13 [U4]).
 
 Figures as published by the cited source around the date shown. "Vendor" = self-reported by the
 model maker. Different benchmark versions/harnesses are **not** directly comparable (Terminal-Bench
@@ -75,7 +72,7 @@ Best result first; quota only breaks ties.
   [O2,O8] but drains Codex usage several times faster [O7], and the user excluded it.
 - **Plan-shaping exploration.** sonnet-5.5: a weaker model may not judge which information matters
   to the plan (see [harness-prior-art.md](harness-prior-art.md)).
-- **Visual input.** gemini-3.8-flash is gone; Claude Code reads images, so sonnet-5.5 implements
+- **Visual input.** Claude Code reads images, so sonnet-5.5 implements
   from screenshot paths in the brief. No model in the set takes video or audio.
 - **Exploration lookups used as-is, Mechanical, Bulk, Trivial.** Well-specified, low-risk work, so
   the cheapest competent model wins the tie: composer-2.5, on the X Subscription pool rather than
