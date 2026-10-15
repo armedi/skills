@@ -31,11 +31,11 @@ PROMPT
 
    | exitCode | Meaning | Next |
    |---|---|---|
-   | `0` | Run completed. T3's answer follows `--- assistant ---`; with `--expect-file`, the file's contents follow it. | Read the files the task touched, then report. |
+   | `0` | Thread settled: subagents are done and their wake-up runs finished. The final run completed; T3's answer follows `--- assistant ---`; with `--expect-file`, the file's contents follow it. | Read the files the task touched, then report. |
    | `1` | Run failed, was interrupted, or the script hit a connection/RPC error. | Report the `error [...]` lines and the thread id. |
    | `2` | Usage error, or Opus 5.5 at high effort isn't available. | A usage error: fix the command from the printed message. A model or effort message: report it and stop. |
    | `3` | Waiting for the user: a permission request in the T3 Code app, or a held queue. | Tell the user what is waiting. Held queue: `--resume-queue`. Request: the user answers it in the app (or approves a relaunch with `--mode full-access`), then watch. |
-   | `4` | Still running past `--timeout`; fusion runs are long, so expect several rounds. | Watch: `t3-run --thread <threadId> --timeout 300`, until the exit code is not `4`. |
+   | `4` | Thread hasn't settled before `--timeout`; fusion runs can take several rounds of subagents and wake-up runs. | Watch: `t3-run --thread <threadId> --timeout 300`, until the exit code is not `4`. |
    | `5` | Run completed, but the `--expect-file` is missing. | Report it with T3's answer. |
    | `6` | The fusion skill isn't installed; nothing launched. | Stop, and ask the user to install it. |
 
@@ -48,7 +48,7 @@ All take `--thread <threadId>` and end on the same `result` line and exit codes.
 - **Redirect the active run:** add `--steer`. A provider that can't steer exits `1`; send it again without `--steer` to queue it.
 - **Stop:** `--interrupt`, only when the user asks. It stops the active run and holds the queue; `0` means the run ended, or nothing was running.
 - **Release a held queue:** `--resume-queue`.
-- **Check on it:** `--thread <threadId>` alone watches the latest run; `0` also covers a thread with no runs.
+- **Check on it:** `--thread <threadId>` alone watches the latest work run and waits for the thread to settle; `0` also covers a thread with no runs.
 
 ## Approval boundaries
 Confirm with the user before sending T3 a task that deletes, force-pushes, deploys, publishes, or touches production systems.

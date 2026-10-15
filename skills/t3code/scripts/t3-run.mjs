@@ -465,6 +465,37 @@ function latestRun(runs) {
   return runs.reduce((latest, run) => !latest || (run.ordinal ?? -Infinity) > (latest.ordinal ?? -Infinity) ? run : latest, null);
 }
 
+function nonMonitorRuns(projection) {
+  const monitorRuns = new Set((projection.messages ?? []).filter((message) =>
+    message.notification?.source?.kind === "monitor").map((message) => message.runId));
+  return (projection.runs ?? []).filter((run) => !monitorRuns.has(run.id));
+}
+
+function latestWorkRun(projection) {
+  return latestRun(nonMonitorRuns(projection));
+}
+
+function runRanAfter(run, other) {
+  const end = (item) => !item.completedAt ? Infinity : Date.parse(item.completedAt);
+  return end(run) === end(other) ? run.ordinal > other.ordinal : end(run) > end(other);
+}
+
+function subagentWaiting(task) {
+  return ["pending", "running", "waiting"].includes(task.status)
+    || ["pending", "claimed"].includes(task.completionDelivery?.state);
+}
+
+// Mirrors T3's server-side delegatedTaskProgress.
+function delegatedTaskProgress(projection) {
+  const runs = nonMonitorRuns(projection).filter((run) => run.status !== "rolled_back");
+  const active = runs.some((run) => !terminalStatuses.has(run.status) && !(run.status === "queued" && run.queueHeld === true));
+  const children = (projection.subagents ?? []).some(subagentWaiting)
+    || (projection.providerThreads ?? []).some((thread) => (thread.pendingBackgroundTasks ?? []).length > 0);
+  const resultRun = runs.filter((run) => terminalStatuses.has(run.status) && (run.startedAt != null || run.ordinal === 1))
+    .toSorted((a, b) => runRanAfter(a, b) ? -1 : runRanAfter(b, a) ? 1 : 0)[0];
+  return { state: active || resultRun === undefined ? "working" : children ? "waiting_for_children" : "result_available", resultRun, active, children };
+}
+
 function followUpRun(projection, messageId) {
   const runs = projection.runs ?? [];
   return runs.find((run) => run.userMessageId === messageId)
@@ -477,18 +508,29 @@ async function monitor(rpc, threadId, initialProjection, options, selectRun, mon
   console.log("thread", result.threadId);
   const deadline = Date.now() + options.timeout * 1000;
   let lastStatus = "";
+  let lastWaitingCount = null;
+  let watchedRun = null;
   let projection = initialProjection;
   const poll = async () => {
     while (true) {
       if (Date.now() >= deadline) throw new DeadlineError();
       if (!projection) projection = await rpc("orchestration.getThreadProjection", { threadId: result.threadId });
+      if (Date.now() >= deadline) throw new DeadlineError();
       const runs = projection.runs ?? [];
-      const run = selectRun(projection);
+      const run = watchedRun ? runs.find((item) => item.id === watchedRun.id) ?? watchedRun : selectRun(projection);
       const request = (projection.runtimeRequests ?? []).find((item) => item.status === "pending");
+      if (run && terminalStatuses.has(run.status) && !monitorOptions.anyTerminalSuccess) watchedRun = run;
+      const progress = watchedRun ? delegatedTaskProgress(projection) : null;
       if (run) {
         result.runId = run.id;
-        result.status = run.status;
-        if (run.status !== lastStatus) { console.log("runs:", run.status); lastStatus = run.status; }
+        result.status = progress?.state ?? run.status;
+        const followed = watchedRun ? latestRun(nonMonitorRuns(projection).filter((item) =>
+          !terminalStatuses.has(item.status) && item.status !== "queued")) ?? latestWorkRun(projection) ?? run : run;
+        const status = `${followed.id}:${followed.status}`;
+        if (status !== lastStatus) {
+          console.log("runs:", followed.status + (followed.id !== run.id ? ` (run ${followed.ordinal})` : ""));
+          lastStatus = status;
+        }
       } else if (!lastStatus) {
         console.log("runs: waiting for watched run");
         lastStatus = "waiting for watched run";
@@ -498,7 +540,7 @@ async function monitor(rpc, threadId, initialProjection, options, selectRun, mon
         result.exitCode = 3;
         return;
       }
-      if (monitorOptions.noRunsMessage && runs.length === 0) {
+      if (monitorOptions.noRunsMessage && nonMonitorRuns(projection).length === 0) {
         console.log("thread has no runs");
         result.exitCode = 0;
         return;
@@ -517,21 +559,54 @@ async function monitor(rpc, threadId, initialProjection, options, selectRun, mon
           result.exitCode = 0;
           return;
         }
-        reportTerminal(projection, run);
-        if (run.status !== "completed") result.exitCode = 1;
-        else if (options["expect-file"] && !existsSync(options["expect-file"])) {
-          console.error(`Expected file missing: ${options["expect-file"]}`);
-          result.exitCode = 5;
-        } else {
-          result.exitCode = 0;
-          if (options["expect-file"]) console.log(`--- ${options["expect-file"]} ---\n${readFileSync(options["expect-file"], "utf8")}`);
+        for (const task of projection.subagents ?? []) {
+          if (!["pending", "running", "waiting"].includes(task.status) || !task.childThreadId) continue;
+          const childProjection = await rpc("orchestration.getThreadProjection", { threadId: task.childThreadId }).catch(() => null);
+          if (Date.now() >= deadline) throw new DeadlineError();
+          const childRequest = (childProjection?.runtimeRequests ?? []).find((item) => item.status === "pending");
+          if (childRequest) {
+            console.log(`thread ${result.threadId} subagent "${task.title}" (thread ${task.childThreadId}) has pending request ${childRequest.id} (${childRequest.kind}); answer it in the T3 Code app`);
+            result.exitCode = 3;
+            return;
+          }
         }
-        return;
+        const heldRun = progress.state !== "result_available" && !progress.active
+          && nonMonitorRuns(projection).find((item) => item.status === "queued" && item.queueHeld === true);
+        if (heldRun) {
+          console.log(`thread ${result.threadId} run ${heldRun.id} is queued and held; resume it with --resume-queue or in the T3 Code app`);
+          result.runId = heldRun.id;
+          result.exitCode = 3;
+          return;
+        }
+        if (progress.state === "result_available" || (!progress.active && !progress.children)) {
+          const finalRun = progress.resultRun && (progress.resultRun.id === run.id || runRanAfter(progress.resultRun, run))
+            ? progress.resultRun : run;
+          result.runId = finalRun.id;
+          result.status = finalRun.status;
+          reportTerminal(projection, finalRun);
+          if (finalRun.status !== "completed") result.exitCode = 1;
+          else if (options["expect-file"] && !existsSync(options["expect-file"])) {
+            console.error(`Expected file missing: ${options["expect-file"]}`);
+            result.exitCode = 5;
+          } else {
+            result.exitCode = 0;
+            if (options["expect-file"]) console.log(`--- ${options["expect-file"]} ---\n${readFileSync(options["expect-file"], "utf8")}`);
+          }
+          const heldCount = runs.filter((item) => item.status === "queued" && item.queueHeld === true).length;
+          if (heldCount) console.log(`queue held: ${heldCount} run(s); resume with --resume-queue`);
+          return;
+        }
+        const waitingCount = (projection.subagents ?? []).filter(subagentWaiting).length;
+        if (waitingCount !== lastWaitingCount && (waitingCount > 0 || lastWaitingCount !== null)) {
+          console.log(`runs: waiting for ${waitingCount} subagent(s)`);
+          lastWaitingCount = waitingCount;
+        }
       }
       const remaining = deadline - Date.now();
       if (remaining <= 0) throw new DeadlineError();
       await new Promise((resolve) => setTimeout(resolve, Math.min(3000, remaining)));
       projection = await rpc("orchestration.getThreadProjection", { threadId: result.threadId });
+      if (Date.now() >= deadline) throw new DeadlineError();
     }
   };
   let timer;
@@ -600,7 +675,7 @@ async function runThreadAction(rpc, options) {
     await monitor(rpc, threadId, null, options, (projection) => followUpRun(projection, messageId));
     return;
   }
-  await monitor(rpc, threadId, null, options, (projection) => latestRun(projection.runs ?? []), { noRunsMessage: true });
+  await monitor(rpc, threadId, null, options, latestWorkRun, { noRunsMessage: true });
 }
 
 async function main() {
@@ -703,7 +778,7 @@ async function main() {
     }, undefined, 120_000);
     try {
       await monitor(rpc, launch.threadId, launch.projection, options, (projection) =>
-        (projection.runs ?? []).find((run) => run.userMessageId === initialMessageId) ?? latestRun(projection.runs ?? []));
+        (projection.runs ?? []).find((run) => run.userMessageId === initialMessageId) ?? latestWorkRun(projection));
     } catch (error) {
       if (!(error instanceof DeadlineError)) throw error;
       result.exitCode = 4;
