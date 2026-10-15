@@ -10,7 +10,7 @@ disable-model-invocation: true
 ## Where it runs
 T3 Code runs on the same machine as your shell — the user's local machine. Drive it only through the bundled `scripts/t3-run.mjs`; the T3 Code window is the user's, so leave it to them.
 
-Resolve script paths from this skill's directory (the folder that contains this `SKILL.md`). Below, `t3-run` means `node <skill-dir>/scripts/t3-run.mjs`. `$T3CODE_HOME` is T3's home, `~/.t3` by default.
+Resolve script paths from this skill's directory (the folder that contains this `SKILL.md`). Below, `t3-run` means `node <skill-dir>/scripts/t3-run.mjs`.
 
 ## Setup
 "Node 22+ required" or `node: command not found`: tell the user and stop. "T3 Code server isn't running" or "Could not connect": ask the user to open the app, then retry. These errors apply to any `t3-run` command.
