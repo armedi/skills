@@ -13,17 +13,15 @@ T3 Code runs on the same machine as your shell — the user's local machine. Dri
 Resolve script paths from this skill's directory (the folder that contains this `SKILL.md`). Below, `t3-run` means `node <skill-dir>/scripts/t3-run.mjs`. `$T3CODE_HOME` is T3's home, `~/.t3` by default.
 
 ## Setup
-Do this at the start of every conversation that uses the skill.
-
-`t3-run --list-projects` prints `<projectId>\t<title>\t<workspaceRoot>` per project. "Node 22+ required" or `node: command not found`: tell the user and stop. "T3 Code server isn't running" or "Could not connect": ask the user to open the app, then retry.
+"Node 22+ required" or `node: command not found`: tell the user and stop. "T3 Code server isn't running" or "Could not connect": ask the user to open the app, then retry. These errors apply to any `t3-run` command.
 
 ## Launch a task
-1. **Project.** Done when you hold the `projectId` whose `workspaceRoot` is the target directory. When the user named no directory, ask. When the directory isn't a project yet, run `$T3CODE_HOME/bin/t3 project add <path>` and list again.
+1. **Project.** Run `t3-run --workspace <dir> --preflight`, where `<dir>` is the directory the user named, otherwise the current working directory. The script maps a subdirectory or git worktree to the project of the repository's main checkout and creates the project when T3 doesn't have one (`created` line). A `worktree` line means the thread will run in that worktree. Follow-ups use `--thread` and need no workspace.
 2. **Mode.** Leave the default `--mode auto`. Switch to `--mode full-access` only with the user's approval, or to `--mode auto-accept-edits` or `approval-required` when the user wants tighter control.
 3. **Run.** The script's defaults fix Claude Code, Opus 5.5 at high effort, so launch with exactly the options below. Write the task itself; the script prepends `/fusion `. Pass the prompt through a heredoc (or an equivalent stdin redirect on the user's shell), so quotes and newlines survive. Name absolute paths in the prompt; when the task should produce a file, add `--expect-file <absolute path>`.
 
 ```
-node <skill-dir>/scripts/t3-run.mjs --project <projectId> \
+node <skill-dir>/scripts/t3-run.mjs --workspace <dir> \
   --timeout 300 [--expect-file <absolute path>] --prompt-file - <<'PROMPT'
 <task>
 PROMPT

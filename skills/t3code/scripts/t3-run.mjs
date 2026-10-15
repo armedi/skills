@@ -2,20 +2,19 @@
 // Drive a T3 Code server over its WebSocket RPC (Effect RPC, JSON frames).
 // Auth: bearer from `t3 auth session issue --token-only` (or T3_TOKEN env), exchanged for a wsTicket.
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { parseArgs } from "node:util";
 import os from "node:os";
 
 const usage = `Usage:
-  node t3-run.mjs --project <projectId> (--prompt <text> | --prompt-file <path|->) [--title <title>] [--mode approval-required|auto-accept-edits|auto|full-access] [--timeout <seconds>] [--origin <url>] [--expect-file <path>] [--no-fusion] [--provider <instanceId>] [--model <slug>] [--effort <level>]
-  node t3-run.mjs --project <projectId> --preflight
+  node t3-run.mjs --workspace <dir> (--prompt <text> | --prompt-file <path|->) [--title <title>] [--mode approval-required|auto-accept-edits|auto|full-access] [--timeout <seconds>] [--origin <url>] [--expect-file <path>] [--no-fusion] [--provider <instanceId>] [--model <slug>] [--effort <level>]
+  node t3-run.mjs --workspace <dir> --preflight
   node t3-run.mjs --thread <threadId> (--prompt <text> | --prompt-file <path|->) [--steer] [--timeout <seconds>] [--origin <url>] [--expect-file <path>]
   node t3-run.mjs --thread <threadId> --interrupt [--timeout <seconds>] [--origin <url>]
   node t3-run.mjs --thread <threadId> --resume-queue [--timeout <seconds>] [--origin <url>]
   node t3-run.mjs --thread <threadId> [--timeout <seconds>] [--origin <url>]
-  node t3-run.mjs --list-projects
   node t3-run.mjs --list-providers
   node t3-run.mjs --help
 
@@ -150,19 +149,19 @@ function parseOptions(argv) {
     strict: true,
     allowPositionals: false,
     options: {
-      project: { type: "string" }, prompt: { type: "string" }, "prompt-file": { type: "string" }, provider: { type: "string" },
+      workspace: { type: "string" }, prompt: { type: "string" }, "prompt-file": { type: "string" }, provider: { type: "string" },
       model: { type: "string" }, mode: { type: "string" }, timeout: { type: "string" },
       title: { type: "string" }, origin: { type: "string" }, "expect-file": { type: "string" },
       thread: { type: "string" }, steer: { type: "boolean" }, interrupt: { type: "boolean" },
       "resume-queue": { type: "boolean" }, effort: { type: "string" }, "no-fusion": { type: "boolean" },
       preflight: { type: "boolean" },
-      "list-projects": { type: "boolean" }, "list-providers": { type: "boolean" }, help: { type: "boolean" },
+      "list-providers": { type: "boolean" }, help: { type: "boolean" },
     },
   });
   if (values.help) return values;
   if (values["list-providers"]) {
     if (values.thread !== undefined) {
-      throw new Error("--thread cannot be combined with launch options, --list-projects, or --list-providers");
+      throw new Error("--thread cannot be combined with launch options, --workspace <dir>, or --list-providers");
     }
     const incompatible = Object.keys(values).filter((key) =>
       !["list-providers", "origin"].includes(key) && values[key] !== undefined && values[key] !== false);
@@ -183,8 +182,8 @@ function parseOptions(argv) {
   }
   const followUpActions = [values.interrupt, values["resume-queue"], values.prompt !== undefined].filter(Boolean).length;
   if (values.thread !== undefined) {
-    if (["project", "provider", "model", "effort", "title", "mode", "list-projects", "no-fusion", "preflight"].some((key) => values[key] !== undefined && values[key] !== false)) {
-      throw new Error("--thread cannot be combined with launch options or --list-projects");
+    if (["provider", "model", "effort", "title", "mode", "workspace", "no-fusion", "preflight"].some((key) => values[key] !== undefined && values[key] !== false)) {
+      throw new Error("--thread cannot be combined with launch options or --workspace <dir>");
     }
     if (values.steer && values.prompt === undefined) throw new Error("--steer requires --thread and --prompt or --prompt-file");
     if (followUpActions > 1) throw new Error("--interrupt, --resume-queue, and --prompt or --prompt-file are mutually exclusive");
@@ -195,15 +194,14 @@ function parseOptions(argv) {
   }
   if (values.interrupt || values["resume-queue"]) throw new Error("--interrupt and --resume-queue require --thread");
   if (values.steer) throw new Error("--steer requires --thread and --prompt or --prompt-file");
-  if (values["list-projects"]) return values;
   values.provider ??= DEFAULT_PROVIDER;
   values.model ??= DEFAULT_MODEL;
   values.effort ??= values.provider === DEFAULT_PROVIDER ? DEFAULT_EFFORT : undefined;
   if (values.preflight) {
-    if (values.project === undefined) throw new Error("--preflight requires --project");
+    if (values.workspace === undefined) throw new Error("--preflight requires --workspace");
     return values;
   }
-  for (const key of ["project", "prompt"]) {
+  for (const key of ["workspace", "prompt"]) {
     if (values[key] === undefined) throw new Error(`Missing required option --${key}`);
   }
   if (values.mode !== undefined && !modes.has(values.mode)) throw new Error(`Invalid --mode: ${values.mode}`);
@@ -279,12 +277,99 @@ async function getProjects(rpc) {
   return projects;
 }
 
-async function listProjects(rpc) {
-  for (const project of await getProjects(rpc)) {
-    console.log(`${project.id}\t${project.title}\t${project.workspaceRoot}`);
+function resolveWorkspace(directory) {
+  let resolved;
+  try {
+    resolved = realpathSync(directory);
+  } catch (error) {
+    throw Object.assign(new Error(`Workspace directory does not exist or cannot be resolved: ${directory}: ${error.message}`), { exitCode: 2 });
   }
-  result.status = "completed";
-  result.exitCode = 0;
+  try {
+    if (!statSync(resolved).isDirectory()) {
+      throw Object.assign(new Error(`Workspace path is not a directory: ${directory}`), { exitCode: 2 });
+    }
+  } catch (error) {
+    if (error.exitCode !== undefined) throw error;
+    throw Object.assign(new Error(`Workspace directory cannot be accessed: ${directory}: ${error.message}`), { exitCode: 2 });
+  }
+  const git = (cwd, args) => {
+    try {
+      const env = { ...process.env };
+      for (const key of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) {
+        delete env[key];
+      }
+      return execFileSync("git", ["-C", cwd, ...args],
+        { encoding: "utf8", env, stdio: ["ignore", "pipe", "pipe"], timeout: 10_000 });
+    } catch {
+      return null;
+    }
+  };
+  const topLevelOutput = git(resolved, ["rev-parse", "--show-toplevel"]);
+  const topLevel = topLevelOutput?.replace(/\n$/, "");
+  if (!topLevel) return { projectRoot: resolved, worktree: null };
+
+  let top;
+  try {
+    top = realpathSync(topLevel);
+  } catch {
+    return { projectRoot: resolved, worktree: null };
+  }
+  const worktreeList = git(resolved, ["worktree", "list", "--porcelain", "-z"]);
+  if (worktreeList === null) {
+    throw Object.assign(new Error(`Could not list git worktrees for ${top}; cannot determine the main checkout`), { exitCode: 2 });
+  }
+  let mainRoot = top;
+  const worktreeFields = worktreeList.split("\0");
+  const firstRecordEnd = worktreeFields.indexOf("");
+  const firstRecord = worktreeFields.slice(0, firstRecordEnd < 0 ? undefined : firstRecordEnd);
+  if (!firstRecord.includes("bare")) {
+    const mainPath = firstRecord.find((field) => field.startsWith("worktree "))?.slice("worktree ".length);
+    if (!mainPath) {
+      throw Object.assign(new Error(`Could not determine the main checkout for git repository ${top}`), { exitCode: 2 });
+    }
+    try {
+      mainRoot = realpathSync(mainPath);
+    } catch {
+      throw Object.assign(new Error(`Main checkout ${mainPath} for worktree ${top} is missing; run \`git worktree repair\` or pass the main checkout`), { exitCode: 2 });
+    }
+  }
+  if (top === mainRoot) return { projectRoot: mainRoot, worktree: null };
+  const branch = git(top, ["symbolic-ref", "--short", "-q", "HEAD"])?.trim() || null;
+  return { projectRoot: mainRoot, worktree: { path: top, branch } };
+}
+
+function normalizeWorkspaceRoot(workspaceRoot) {
+  try {
+    return realpathSync(workspaceRoot);
+  } catch {
+    return path.resolve(workspaceRoot);
+  }
+}
+
+async function workspaceProject(rpc, directory) {
+  const findProject = (projects) => projects.find((project) =>
+    normalizeWorkspaceRoot(project.workspaceRoot) === directory);
+  let project = findProject(await getProjects(rpc));
+  if (project) {
+    console.log(`project\t${project.id}\t${project.title}\t${project.workspaceRoot}`);
+  } else {
+    const home = process.env.T3CODE_HOME || path.join(os.homedir(), ".t3");
+    try {
+      execFileSync(path.join(home, "bin", "t3"), ["project", "add", directory],
+        { stdio: ["ignore", "pipe", "pipe"], timeout: 30_000 });
+    } catch (error) {
+      const stderr = error.stderr?.toString().trim() ?? "";
+      throw new Error(`Could not add T3 project for ${directory}.${stderr ? `\n${stderr}` : ` ${error.message}`}`);
+    }
+    for (let attempt = 0; attempt < 5; attempt++) {
+      if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, 500));
+      project = findProject(await getProjects(rpc));
+      if (project) break;
+    }
+    if (!project) throw new Error(`T3 project was added for ${directory}, but it was not listed afterwards`);
+    console.log(`created\t${project.id}\t${project.title}\t${project.workspaceRoot}`);
+  }
+  return project;
 }
 
 async function listProviders(rpc) {
@@ -345,14 +430,19 @@ async function preflight(rpc, options) {
     }
   }
   console.log(`model\t${provider.instanceId}\t${model.slug}\teffort=${options.effort ?? "default"}`);
-  if (options["no-fusion"]) return;
-  const project = (await getProjects(rpc)).find((item) => item.id === options.project);
-  if (!project) throw Object.assign(new Error(`Project ${options.project} not found; run --list-projects`), { exitCode: 2 });
-  const skill = findFusionSkill(config, provider.instanceId, project.workspaceRoot);
+  const project = await workspaceProject(rpc, options.workspaceResolution.projectRoot);
+  if (options.workspaceResolution.worktree) {
+    const { path: worktreePath, branch } = options.workspaceResolution.worktree;
+    console.log(`worktree\t${worktreePath}\t${branch ?? "detached"}`);
+  }
+  if (options["no-fusion"]) return project;
+  const fusionRoot = options.workspaceResolution.worktree?.path ?? options.workspaceResolution.projectRoot;
+  const skill = findFusionSkill(config, provider.instanceId, fusionRoot);
   if (!skill) {
-    throw Object.assign(new Error(`Fusion skill not found for ${project.workspaceRoot} (checked T3's skill list, .claude/skills/fusion in the project, and ~/.claude/skills/fusion). Install it from ${FUSION_URL}`), { exitCode: 6 });
+    throw Object.assign(new Error(`Fusion skill not found for ${fusionRoot} (checked T3's skill list, .claude/skills/fusion in the project, and ~/.claude/skills/fusion). Install it from ${FUSION_URL}`), { exitCode: 6 });
   }
   console.log(`fusion\t${skill}`);
+  return project;
 }
 
 function reportTerminal(projection, run) {
@@ -533,6 +623,16 @@ async function main() {
     return;
   }
 
+  if (options.workspace !== undefined) {
+    try {
+      options.workspaceResolution = resolveWorkspace(options.workspace);
+    } catch (error) {
+      console.error(error.message);
+      result.exitCode = error.exitCode ?? 2;
+      return;
+    }
+  }
+
   const home = process.env.T3CODE_HOME || path.join(os.homedir(), ".t3");
   const runtimePath = path.join(home, "userdata", "server-runtime.json");
   if (!existsSync(runtimePath)) {
@@ -550,10 +650,6 @@ async function main() {
   const origin = options.origin ?? runtime.origin;
   try {
     const rpc = await connect(origin);
-    if (options["list-projects"]) {
-      await listProjects(rpc);
-      return;
-    }
     if (options["list-providers"]) {
       await listProviders(rpc);
       return;
@@ -568,8 +664,9 @@ async function main() {
       }
       return;
     }
+    let project;
     try {
-      await preflight(rpc, options);
+      project = await preflight(rpc, options);
     } catch (error) {
       if (error.exitCode === undefined) throw error;
       console.error(error.message);
@@ -590,12 +687,18 @@ async function main() {
     const launch = await rpc("orchestration.launchThread", {
       commandId,
       threadId: commandId,
-      projectId: options.project,
+      projectId: project.id,
       title: options.title,
       modelSelection,
       runtimeMode: options.mode,
       interactionMode: "default",
-      workspaceStrategy: { type: "root" },
+      workspaceStrategy: options.workspaceResolution.worktree
+        ? {
+          type: "existing_worktree",
+          worktreePath: options.workspaceResolution.worktree.path,
+          ...(options.workspaceResolution.worktree.branch ? { branch: options.workspaceResolution.worktree.branch } : {}),
+        }
+        : { type: "root" },
       initialMessage: { messageId: initialMessageId, text: prompt, attachments: [] },
     }, undefined, 120_000);
     try {
