@@ -1,32 +1,26 @@
 ---
 name: t3code
 description: >-
-  Delegate coding work to T3 Code on the local machine, or follow up on, check,
-  or stop an existing T3 Code thread.
+  Delegate coding work to T3 Code, or follow up on, check, or stop an existing
+  T3 Code thread.
 disable-model-invocation: true
 ---
 # T3 Code
 
-## When to use it
-T3 Code is for non-trivial coding work, or whenever the user asks for it. Small changes (a one-file tweak, a typo or config fix) you make yourself under your normal coding rules.
-
-Every launch is fixed: Claude Code, Opus 5.5 at high effort, running the task through the `/fusion` skill. The script's defaults apply all of it, so launch with exactly the options shown in **Run**.
-
 ## Where it runs
-T3 Code runs on the same machine as your shell — the user's local machine, any OS. Drive it only through the bundled `scripts/t3-run.mjs`; the T3 Code window is the user's, so leave it to them.
+T3 Code runs on the same machine as your shell — the user's local machine. Drive it only through the bundled `scripts/t3-run.mjs`; the T3 Code window is the user's, so leave it to them.
 
-Resolve script paths from this skill's directory (the folder that contains this `SKILL.md`). Below, `t3-run` means `node <skill-dir>/scripts/t3-run.mjs`. T3's home is `~/.t3` (override with `T3CODE_HOME`).
+Resolve script paths from this skill's directory (the folder that contains this `SKILL.md`). Below, `t3-run` means `node <skill-dir>/scripts/t3-run.mjs`. `$T3CODE_HOME` is T3's home, `~/.t3` by default.
 
 ## Setup
 Do this at the start of every conversation that uses the skill.
 
-1. **Check the server.** Confirm `$T3CODE_HOME/userdata/server-runtime.json` exists (default home `~/.t3`). Missing: ask the user to open the T3 Code app, then retry.
-2. **Check the script.** `t3-run --list-projects` prints `<projectId>\t<title>\t<workspaceRoot>` per project. "Node 22+ required" or `node: command not found`: tell the user and stop. "T3 Code server isn't running" or "Could not connect": ask the user to open the app, then retry.
+`t3-run --list-projects` prints `<projectId>\t<title>\t<workspaceRoot>` per project. "Node 22+ required" or `node: command not found`: tell the user and stop. "T3 Code server isn't running" or "Could not connect": ask the user to open the app, then retry.
 
 ## Launch a task
-1. **Project.** Done when you hold the `projectId` whose `workspaceRoot` is the target directory. When the user named no directory, ask. When the directory isn't a project yet, run `$T3CODE_HOME/bin/t3 project add <path>` (default home `~/.t3`) and list again.
+1. **Project.** Done when you hold the `projectId` whose `workspaceRoot` is the target directory. When the user named no directory, ask. When the directory isn't a project yet, run `$T3CODE_HOME/bin/t3 project add <path>` and list again.
 2. **Mode.** Leave the default `--mode auto`. Switch to `--mode full-access` only with the user's approval, or to `--mode auto-accept-edits` or `approval-required` when the user wants tighter control.
-3. **Run.** Write the task itself; the script prepends `/fusion `. Pass the prompt through a heredoc (or an equivalent stdin redirect on the user's shell), so quotes and newlines survive. Name absolute paths in the prompt; when the task should produce a file, add `--expect-file <absolute path>`.
+3. **Run.** The script's defaults fix Claude Code, Opus 5.5 at high effort, so launch with exactly the options below. Write the task itself; the script prepends `/fusion `. Pass the prompt through a heredoc (or an equivalent stdin redirect on the user's shell), so quotes and newlines survive. Name absolute paths in the prompt; when the task should produce a file, add `--expect-file <absolute path>`.
 
 ```
 node <skill-dir>/scripts/t3-run.mjs --project <projectId> \
@@ -35,13 +29,13 @@ node <skill-dir>/scripts/t3-run.mjs --project <projectId> \
 PROMPT
 ```
 
-4. **Read the outcome.** Before launching, the script checks that Opus 5.5 at high effort and the fusion skill are available. The last line, `result {"threadId":…,"status":…,"exitCode":…}`, is the outcome. Act on `exitCode`:
+4. **Read the outcome.** The last line, `result {"threadId":…,"status":…,"exitCode":…}`, is the outcome. Act on `exitCode`:
 
    | exitCode | Meaning | Next |
    |---|---|---|
    | `0` | Run completed. T3's answer follows `--- assistant ---`; with `--expect-file`, the file's contents follow it. | Read the files the task touched, then report. |
    | `1` | Run failed, was interrupted, or the script hit a connection/RPC error. | Report the `error [...]` lines and the thread id. |
-   | `2` | Usage error, or Opus 5.5 at high effort isn't available. | A usage error: fix the command from the printed message. A provider, model or effort message: report it and stop. |
+   | `2` | Usage error, or Opus 5.5 at high effort isn't available. | A usage error: fix the command from the printed message. A model or effort message: report it and stop. |
    | `3` | Waiting for the user: a permission request in the T3 Code app, or a held queue. | Tell the user what is waiting. Held queue: `--resume-queue`. Request: the user answers it in the app (or approves a relaunch with `--mode full-access`), then watch. |
    | `4` | Still running past `--timeout`; fusion runs are long, so expect several rounds. | Watch: `t3-run --thread <threadId> --timeout 300`, until the exit code is not `4`. |
    | `5` | Run completed, but the `--expect-file` is missing. | Report it with T3's answer. |
@@ -62,4 +56,4 @@ All take `--thread <threadId>` and end on the same `result` line and exit codes.
 Confirm with the user before sending T3 a task that deletes, force-pushes, deploys, publishes, or touches production systems.
 
 ## Beyond the script
-When the script can't do what's needed (answering a pending request, reading a run's diff), read [`references/protocol.md`](references/protocol.md) for the WebSocket API. Set `DEBUG=1` on the script to print raw frames.
+When the script can't do what's needed, read [`references/protocol.md`](references/protocol.md) for the WebSocket API. Set `DEBUG=1` on the script to print raw frames.
