@@ -177,7 +177,7 @@ the parts separate cleanly; otherwise take the role of its riskiest part.
 
 | Role | Takes | Implementer | Reviewer |
 |---|---|---|---|
-| **Hardest** | architecture, subtle bugs, concurrency, security-sensitive logic, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` | yes |
+| **Hardest** | architecture, subtle bugs, concurrency, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` | yes |
 | **Greenfield** | a new program or module built from a spec | opus-5.5 at `high` | yes |
 | **Feature** | features, refactors, bugs of known cause, repo-wide changes | gpt-6.1-sol | yes |
 | **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol at `xhigh` | yes |
@@ -185,7 +185,7 @@ the parts separate cleanly; otherwise take the role of its riskiest part.
 | **Visual bug** | a bug shown in a screenshot | opus-5.5, with the image paths in the brief | yes |
 | **UI** | UI built from scratch or from a mockup | sonnet-5.5, with the image paths in the brief | yes |
 | **Migration** | porting code between languages | gpt-6.1-sol; sonnet-5.5 when the target is Python | yes |
-| **Security** | finding and patching vulnerabilities in native code | grok-4.7; a failure moves to haiku-5.5 | yes |
+| **Security** | vulnerabilities, auth, access control, crypto, secrets | gpt-6.1-sol | yes |
 | **Reverse engineering** | binaries and undocumented protocols | gpt-6.1-sol at `xhigh` | yes |
 | **Science** | scientific and numerical code | opus-5.5 | yes |
 | **Docs** | READMEs, skill files, prose | sonnet-5.5 | none; you review |
