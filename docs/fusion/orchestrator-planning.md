@@ -2,7 +2,7 @@
 
 Evidence behind the `fusion` skill's split: the orchestrator plans, briefs, and reviews;
 read-only `delegate_task` explorers answer questions over wide code; a cross-vendor model critiques
-Hard-lane plans and multi-file Normal-lane plans. No controlled study compares
+Hardest and Greenfield plans and multi-file plans in the other critique roles. No controlled study compares
 "orchestrator plans" with "planning delegated" for coding; these are the nearest controlled
 results and practitioner reports. What the skill takes from the published multi-model harnesses
 (Devin Fusion, HydraFusion, Rubber Duck) is in [harness-prior-art.md](harness-prior-art.md).
@@ -30,14 +30,15 @@ results and practitioner reports. What the skill takes from the published multi-
   report back summaries" [R6]. Delegate when context needs "dozens of files"; keep sequential,
   dependent work in one session [R7]. Devin Fusion adds a limit: exploration that shapes the plan
   should not go to a weaker model, which "may not have the ability to properly decide what
-  information matters" (see harness-prior-art.md); hence sonnet-5.5 for plan-shaping questions.
+  information matters" (see harness-prior-art.md); hence the Explorer role, gpt-6.1-sol at
+  `medium`, for plan-shaping questions (its evidence is in [model-roles.md](model-roles.md)).
 - **Specification is the main failure point.** MAST finds multi-agent failures stem mostly from
   system design and inter-agent misalignment, not model limits [R8]. A delegated plan adds a hop,
   and step 5's review needs first-hand understanding anyway.
 - **Fresh-context critique helps.** A clean-context verifier notably improves a generator-verifier
   loop [R3]; agents grading their own work skew positive [R9]. A critic from a different model
   family helps most on multi-file tasks (Rubber Duck; see harness-prior-art.md). Hence the plan
-  critique on Hard-lane tasks and Normal-lane tasks touching 3+ files.
+  critique on Hardest and Greenfield tasks and on other critique-role tasks touching 3+ files.
 - **Counterexample.** Anthropic's long-running-app harness keeps a separate planner, because the
   generator under-scoped without one [R9]. That planner expands a one-line prompt into a greenfield
   product spec, sits at the top with no orchestrator above it, and avoids technical detail because

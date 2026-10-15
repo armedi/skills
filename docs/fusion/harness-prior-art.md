@@ -48,13 +48,14 @@ the plan.
 - **Tune brief detail and pushback to the implementer.** "Paired with a weaker sidekick, Fable 5.1
   needs to provide more prescriptive briefs"; "with stronger sidekicks, encouraging pushback can
   help catch mistakes in the lead's plan. Allowing weaker sidekicks to be opinionated ends up
-  hurting overall performance and cost" [F1]. → Step 3: design briefs and an objections section
-  for sonnet-5.5/opus-5.5/gpt-6.1-sol; prescriptive briefs and "stop and report" for
-  composer-2.5/grok-4.7/haiku-5.5.
+  hurting overall performance and cost" [F1]. → Step 3: prescriptive briefs and "stop and
+  report" for the cheap-model roles (Mechanical, Bulk, Trivial); design briefs and an objections
+  section for every other role.
 - **Plan-shaping exploration stays with a strong model.** "Exploration needed for planning should
   not be delegated to a weaker sidekick… A weaker sidekick may not have the ability to properly
-  decide what information matters" [F1]. → Exploration lane: composer-2.5 only for lookups
-  used as-is; anything that shapes the plan goes to sonnet-5.5.
+  decide what information matters" [F1]. → Roles: the Lookup role (composer-2.5) only for
+  lookups used as-is; anything that shapes the plan goes to the Explorer role (gpt-6.1-sol at
+  `medium`).
 - **Keep judgment with the lead.** On a hard React/Redux feature "graded on its judgment calls",
   delegation dropped the score 54 → 27: "When the judgment is the deliverable, delegating it
   backfires" [F2]. Delegation also gains little on short tasks and on "serial debugging tasks where
@@ -66,8 +67,8 @@ the plan.
   problems spanning "3+ files" and "70+ steps" (+3.8%, +4.8% on the hardest) [H2]. Checkpoints:
   after the plan ("the biggest wins"), after a complex implementation, after writing tests, and
   reactively when the agent "gets stuck in a loop"; the critic returns "a short, focused list of
-  high-value concerns" [H2]. → Step 3: plan critique extended to Normal-lane tasks touching 3+
-  files at `medium`; steps 3 and 6: critics list only high-value concerns, most important first;
+  high-value concerns" [H2]. → Step 3: plan critique for Hardest and Greenfield tasks, extended
+  to other critique-role tasks touching 3+ files at `medium`; steps 3 and 6: critics list only high-value concerns, most important first;
   step 7: a read-only stuck-diagnosis before moving a rung up.
 - **Fail-safe application.** HydraFusion applies no patch from a cancelled or failed workflow [H1].
   Children here edit the shared tree directly, so the equivalent is deciding where the next round
@@ -81,11 +82,11 @@ the plan.
   price per task rather than price per token" [F1]; a stronger sidekick (SWE-2, +275% per token)
   matched a cheaper one's total cost (−2%) at a higher score because it needed fewer review rounds
   [F1]. HydraFusion counts drafting, critique, revision, escalation, retry, and fallback [H1]. →
-  Step 8: the hand-off lists every run. These reports are the data for re-tuning the lanes;
+  Step 8: the hand-off lists every run. These reports are the data for re-tuning the roles;
   `task_status` reports no token usage, so they count runs rather than tokens.
 - **Least elaborate workflow first.** HydraFusion uses extra calls "only when they are likely to
-  improve the result" [H1]. → Lanes: Mechanical, Bulk, and Trivial are a cascade; Normal, Hard, and
-  Visual input a critique.
+  improve the result" [H1]. → Roles: Mechanical, Bulk, and Trivial are a cascade; the other write
+  roles a critique.
 
 ## Not adopted
 
@@ -99,7 +100,7 @@ the plan.
   calls; the orchestrator instead verifies `git status --porcelain` and `git diff` are unchanged
   after a review.
 - **Learned routing and mid-session model switching** [H1,H4,F2]. Both are trained or tuned
-  against benchmarks and production traffic; the skill routes by hand-written lanes and climbs the
+  against benchmarks and production traffic; the skill routes by hand-written roles and climbs the
   escalation ladder on evidence from the gates.
 - **Fable 5.1 as the orchestrator.** Cognition's cheaper-Fable-lead result compares Fable 5 with
   Opus 4.8 [F3]; no source measures Opus 5.5 as a lead. The skill keeps opus-5.5; the rules above

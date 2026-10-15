@@ -30,9 +30,9 @@ Read-only children (explorers, reviewers) may run, in parallel, while no impleme
    the real gate commands. Explore the code the work touches: read it yourself when it's a few
    files; when answering needs a dozen or more files, or call sites mapped across the repo, call
    `orchestrator_capabilities` and dispatch read-only explorers with `delegate_task` on the
-   **Exploration** lane at `low`, one specific question each. The brief says: make no edits; answer
-   with a summary and `file:line` evidence; confirm `git status --porcelain` is unchanged at the
-   end. Dispatch them `async`, then record the **baseline** while they work: `git rev-parse HEAD`,
+   **Lookup** or **Explorer** role, one specific question each. The brief says: make no edits;
+   answer with a summary and `file:line` evidence; confirm `git status --porcelain` is unchanged
+   at the end. Dispatch them `async`, then record the **baseline** while they work: `git rev-parse HEAD`,
    the result of running each gate once, and `git status --porcelain` after the gates ran, so gate
    artifacts aren't mistaken for a child's stray files. End your turn only when nothing is left to
    do but wait. Spot-check the cited lines before relying on an answer; don't re-read files an
@@ -45,9 +45,9 @@ Read-only children (explorers, reviewers) may run, in parallel, while no impleme
    cause yourself when it is one short chain of reasoning, and brief the fix with the cause
    stated. Done when every task has a goal, a file scope, its non-goals, and its gate commands as
    verbatim strings, and the baseline notes which gates were already red.
-2. **Route.** Call `orchestrator_capabilities`, then pick each task's model from **Lanes** and its
-   effort from **Effort**. Done when every task has a model and an effort level with a
-   one-line reason.
+2. **Route.** Call `orchestrator_capabilities`, then pick each task's role and model from
+   **Roles** and its effort from **Effort**. Done when every task has a role, a model, and an
+   effort level with a one-line reason.
 3. **Brief.** The child sees only the brief and the working tree, so write one task per brief:
    - the goal; for bugs, the repro, the observed error, and the root cause if you found it;
    - what is already known: explorer findings and the relevant `file:line`s, so the child doesn't
@@ -62,17 +62,18 @@ Read-only children (explorers, reviewers) may run, in parallel, while no impleme
    - the report: changes, files touched, each gate with pass/fail, design decisions, assumptions,
      and anything left undone or uncertain.
 
-   Match the brief to the implementer:
-   - **sonnet-5.5, opus-5.5, gpt-6.1-sol:** a design brief: the constraints and done-criteria, not
-     the code. Add to the report: "objections to the plan, with evidence; don't act on them."
-   - **composer-2.5, grok-4.7, haiku-5.5:** a prescriptive brief: the exact change per file. Add:
-     "follow the brief exactly; if it can't be done as written, stop and report the blocker."
+   Match the brief to the role:
+   - **Mechanical, Bulk, Trivial:** a prescriptive brief: the exact change per file. Add: "follow
+     the brief exactly; if it can't be done as written, stop and report the blocker."
+   - **Every other role:** a design brief: the constraints and done-criteria, not the code. Add to
+     the report: "objections to the plan, with evidence; don't act on them."
 
-   **Plan critique**, for every Hard-lane task (at `high`) and every Normal-lane task touching 3 or
-   more files (at `medium`). Before the first dispatch, send gpt-6.1-sol a read-only `delegate_task`
-   with the user's request, your plan, and every brief: check them against the code and list, most
-   important first, only the high-value concerns (wrong assumptions, missed call sites, missing
-   constraints, non-goals, or gates), each with `file:line`; make no edits. Judge each finding as in
+   **Plan critique**, for every Hardest or Greenfield task (at `high`) and every other critique-role
+   task touching 3 or more files (at `medium`). Before the first dispatch, send the **Plan critic**
+   a read-only `delegate_task` with the user's request, your plan, and every brief: check them
+   against the code and list, most important first, only the high-value concerns (wrong
+   assumptions, missed call sites, missing constraints, non-goals, or gates), each with
+   `file:line`; make no edits. Judge each finding as in
    step 6 and revise the briefs. Done when every finding is judged.
 4. **Dispatch** with `delegate_task`, `mode: "async"`, the target from **Models**. End your turn;
    the child's completion wakes you. If a child is stuck or working outside its brief, stop it with
@@ -89,8 +90,8 @@ Read-only children (explorers, reviewers) may run, in parallel, while no impleme
    - Judge each objection in the report as in step 6; a valid one changes the plan before rework.
    - Never edit the child's diff yourself, however small the fix: every fix goes to step 7 as a
      brief. Rewriting at the orchestrator costs more and catches no more bugs.
-6. **Cross-review** every change whose lane names a reviewer, in a new `delegate_task` with a
-   read-only brief: run `git status --porcelain`, read every untracked file, review `git diff`
+6. **Cross-review** every change whose role has a reviewer: send the **Reviewer** a new read-only
+   `delegate_task`: run `git status --porcelain`, read every untracked file, review `git diff`
    against the original brief, and list, most important first, only high-value concerns: bugs,
    missing tests, and scope creep, each with file:line; no style nits; make no edits. When it
    finishes, run `git status --porcelain` and `git diff` yourself and confirm the review changed
@@ -105,11 +106,10 @@ Read-only children (explorers, reviewers) may run, in parallel, while no impleme
      wrong approach or design flaw starts from the baseline: if the baseline was clean, set the diff
      aside with `git stash push -u -m "failed: <model>"` and say so in the delta; otherwise ask the
      user.
-   - **Stuck-diagnosis.** Before moving a task one rung up after a second failure, send gpt-6.1-sol
-     (opus-5.5 if gpt-6.1-sol was the implementer) a read-only `delegate_task` at `medium` with the
-     brief, the diff, and the failing gate output: diagnose why it fails, `file:line` evidence, no
-     edits. Put the diagnosis in the next delta. If it shows the brief was wrong, fix the brief and
-     stay on the rung.
+   - **Stuck-diagnosis.** Before moving a task one rung up after a second failure, send the
+     **Investigator** a read-only `delegate_task` with the brief, the diff, and the failing gate
+     output: diagnose why it fails, `file:line` evidence, no edits. Put the diagnosis in the next
+     delta. If it shows the brief was wrong, fix the brief and stay on the rung.
 8. **Hand off.** Report each run on one line (child thread / role / model / effort and its reason),
    counting every run: explorers, critiques, reviews, retries, and rework rounds. List any
    `failed:` stashes left in `git stash list`. Then the change summary and files touched; the gate
@@ -157,39 +157,56 @@ user's subscriptions, so cost is usage quota, not money.
   grok-4.7 and composer-2.5 share the X Subscription's one usage pool: when either hits its usage
   limit, skip the other too and use gpt-6.1-sol.
 
-## Lanes
+## Roles
 
-| Lane | Implementer | Reviewer | Notes |
+Each role names the model with the best measured result for that kind of work at the effort it
+runs; where two models scored about equally, the non-Claude one. A task spanning roles: split it per role when
+the parts separate cleanly; otherwise take the role of its riskiest part.
+
+**Read-only roles.**
+
+| Role | Takes | Model |
+|---|---|---|
+| **Lookup** | step 1 questions whose answer you use as-is: find X, list call sites | composer-2.5 |
+| **Explorer** | step 1 questions on how something works, or any answer that shapes the plan | gpt-6.1-sol at `medium` |
+| **Investigator** | stuck-diagnosis (step 7) | gpt-6.1-sol at `medium`; opus-5.5 when gpt-6.1-sol was the implementer |
+| **Plan critic** | plan critique (step 3) | gpt-6.1-sol |
+| **Reviewer** | cross-review (step 6) | gpt-6.1-sol; opus-5.5 when gpt-6.1-sol was the implementer |
+
+**Write roles.**
+
+| Role | Takes | Implementer | Reviewer |
 |---|---|---|---|
-| **Hard**: architecture, subtle bugs, concurrency, security, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 | gpt-6.1-sol | |
-| **Exploration**: read-only questions for planning (step 1) | lookups whose answer you use as-is (find X, list call sites): composer-2.5; how-it-works questions, or any answer that shapes the plan: sonnet-5.5 | none; you spot-check the cited lines | |
-| **Normal**: features, multi-file refactors, non-obvious bugs, build/CI fixes of known cause, shell scripts, repo-wide analysis | sonnet-5.5 | gpt-6.1-sol | |
-| **Visual input**: UI from mockup/screenshot, visual bugs | sonnet-5.5, with the image paths in the brief | gpt-6.1-sol | none of the models take video or audio: ask the user for frames or a transcript |
-| **Cross-vendor alternative**: best-of-2, or Claude models stuck | gpt-6.1-sol | opus-5.5 or sonnet-5.5 | |
-| **Mechanical**: renames, codemods, formatting, boilerplate, simple tests, dependency bumps with green tests | composer-2.5 | none; you review | |
-| **Bulk**: many independent small edits | composer-2.5, one shard at a time | gpt-6.1-sol on the combined diff | a failing shard goes straight to grok-4.7 |
-| **Trivial**: typo, one-line config | composer-2.5 | none; you review | |
+| **Hardest** | architecture, subtle bugs, concurrency, security-sensitive logic, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` | yes |
+| **Greenfield** | a new program or module built from a spec | opus-5.5 at `high` | yes |
+| **Feature** | features, refactors, bugs of known cause, repo-wide changes | gpt-6.1-sol | yes |
+| **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol at `xhigh` | yes |
+| **Algorithm** | performance-critical or algorithm-heavy logic | gpt-6.1-sol at `xhigh` | yes |
+| **Visual bug** | a bug shown in a screenshot | opus-5.5, with the image paths in the brief | yes |
+| **UI** | UI built from scratch or from a mockup | sonnet-5.5, with the image paths in the brief | yes |
+| **Migration** | porting code between languages | gpt-6.1-sol; sonnet-5.5 when the target is Python | yes |
+| **Security** | finding and patching vulnerabilities in native code | grok-4.7; a failure moves to haiku-5.5 | yes |
+| **Reverse engineering** | binaries and undocumented protocols | gpt-6.1-sol at `xhigh` | yes |
+| **Science** | scientific and numerical code | opus-5.5 | yes |
+| **Docs** | READMEs, skill files, prose | sonnet-5.5 | none; you review |
+| **Mechanical** | renames, codemods, formatting, boilerplate, simple tests, dependency bumps with green tests | composer-2.5 | none; you review |
+| **Bulk** | many independent small edits | composer-2.5, one shard at a time; haiku-5.5 for UI shards | yes, on the combined diff |
+| **Trivial** | typo, one-line config | composer-2.5 | none; you review |
+
+None of the models take video or audio: ask the user for frames or a transcript.
 
 The reviewer is always a different vendor from the implementer, in a new `delegate_task`. When a
-model is replaced by its fallback, re-check this: a GPT implementer gets a Claude reviewer (opus-5.5
-for Hard work, sonnet-5.5 otherwise), and a Claude implementer gets a GPT reviewer.
+model is replaced by its fallback, re-check this.
 
-Pick the least elaborate lane that fits: extra runs pay only when they catch something. Mechanical,
-Bulk, and Trivial are a *cascade*: a cheap model drafts, your review and the gates accept it or
-send it up the ladder. Normal, Hard, and Visual input are a *critique*: a cross-vendor model
-reviews the plan or the diff, and the implementer revises.
-
-**Best-of-2**, only when the user says "important" or "careful", and only from a clean baseline
-(`git status --porcelain` empty; otherwise ask the user): run opus-5.5, then gpt-6.1-sol, at the same
-effort on the same brief. After the first passes steps 5 and 6, save its diff with
-`git stash push -u -m "best-of-2: opus-5.5"` so the second starts from the baseline. Review the
-second, then compare it with `git stash show -p --include-untracked` and keep the better one
-(correctness > test coverage > simplicity > scope discipline); to keep the first, discard the second
-with `git checkout -- . && git clean -fd` and `git stash pop`; to keep the second, `git stash drop`.
-Report why.
+Pick the least elaborate role that fits: extra runs pay only when they catch something.
+Mechanical, Bulk, and Trivial are a *cascade*: a cheap model drafts, your review and the gates
+accept it or send it up the ladder. The other write roles with a reviewer are a *critique*: a
+cross-vendor model reviews the plan or the diff, and the implementer revises.
 
 **Escalation ladder** for rework:
-`composer-2.5 / haiku-5.5 → grok-4.7 → sonnet-5.5 → opus-5.5 or gpt-6.1-sol`.
+`composer-2.5 / haiku-5.5 → grok-4.7 → gpt-6.1-sol or opus-5.5`. A model off the ladder
+(sonnet-5.5) moves to the top rung. A failing build or environment task skips grok-4.7, which is
+weak at terminal work.
 - A small defect: one delta round on the same model at the same effort.
 - A vague brief: sharpen it; same model and effort.
 - A case it could have reasoned out: same model, effort one level up.
@@ -205,9 +222,12 @@ Effort is a property of the task, not of the model. Pick the **lowest** level wh
 | `low` | The brief names the exact files, the change, and the gates. The implementer only executes. |
 | `medium` (default) | Some judgment inside a clear scope: a feature across a few files following repo patterns, a bug whose root cause you have already found, a refactor with a defined target shape. |
 | `high` | The implementer must find something out or design something: unknown root cause, invariants across many files, or concurrency, security, money, or migration correctness. |
-| `xhigh` / `max` | Only through the escalation ladder, or when the user asks. |
+| `xhigh` / `max` | Only when the role names it, through the escalation ladder, or when the user asks. |
 
-- **The model sets the ceiling; effort tunes within it.** Take the lane's model at a lower effort
+A role that names an effort sets it; the table covers the rest.
+
+- **The model sets the ceiling; effort tunes within it.** Take the role's model at a lower effort
   over a cheaper model at a higher one.
+- **Cap gpt-6.1-sol at `xhigh`:** `max` adds little or nothing and costs about 1.5× more.
 - **Shrink the task before raising effort.** Split a large task into `medium` briefs.
 - **Reviewers** run at `medium`, or `high` for a `high`-class change.
