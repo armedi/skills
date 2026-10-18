@@ -1,6 +1,6 @@
 ---
 name: principles
-description: Engineering principles index. Use for any non-trivial coding work (design, debugging, refactors, migrations, tests, reviews, verification) to pick and apply the matching principle-* skills.
+description: Engineering principles for coding work. Use before designing, refactoring, debugging, migrating, writing tests, reviewing code, trusting a measured number, or declaring work done.
 ---
 
 # Principles
