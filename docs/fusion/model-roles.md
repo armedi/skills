@@ -1,4 +1,4 @@
-# Model roles (compiled 2026-10-15; security re-checked 2026-10-16; deepseek-v4.1-flash added 2026-10-21)
+# Model roles (compiled 2026-10-15; security re-checked 2026-10-16; deepseek-v4.1-flash added 2026-10-21; moved to Command Code 2026-10-24)
 
 Evidence behind the `fusion` skill's **Models**, **Roles**, and **Effort** sections in
 [SKILL.md](../../skills/fusion/SKILL.md). SKILL.md routes; this file explains why.
@@ -18,7 +18,8 @@ Conventions:
   2.0/2.1 ≠ 4.0; TB4.0 rows are model+harness pairs; Claude Code/Codex ≠ mini-SWE-agent ≠ OpenHands.
 - "±" is the source's own standard error (1σ). A gap is compared as diff ÷ √(SE₁² + SE₂²),
   treating rows as independent.
-- `deepseek-v4.1-flash` is DeepSeek-V4.1-Flash-1017 as OpenCode Go serves it. "Sept build" is its
+- `deepseek-v4.1-flash` is DeepSeek V4.1 Flash as Command Code serves it, taken to be the 1017
+  build: Command Code labels it "(latest)" but names no checkpoint [M2]. "Sept build" is its
   2026-09-10 predecessor, cited only where 1017 has no row.
 - TB4.0 σ for Artificial Analysis Intelligence Index rows, which publish none, is the binomial
   √(p(1−p)/n) at n = 198 attempts (66 tasks × 3 [C1]). Repeats of one task are correlated, so this
@@ -35,14 +36,14 @@ equally, it takes the non-Claude one, to keep Claude Pro for the opus-5.5 orches
 says so.
 
 **Quota rule (2026-10-21).** Claude Pro and ChatGPT Plus run out first; deepseek-v4.1-flash draws
-on OpenCode Go instead [G1]. Where it measures within 2σ of a Pro or Plus model at the effort the
+on Command Code instead [M3]. Where it measures within 2σ of a Pro or Plus model at the effort the
 role runs, it takes the role, at `max`, the only effort it is measured at [C4,V14].
 
 ### Read-only roles
 
 | Role | Model | Why |
 |---|---|---|
-| **Lookup** | composer-2.5 | The answer is used as-is and its cited lines spot-checked, so the cheapest competent model wins, on the X pool. No codebase-Q&A benchmark covers it; trust the spot-checks, not its scores (vendor [K1,K2]; Vals SWE-bench 79.6 [V13]). |
+| **Lookup** | deepseek-v4.1-flash | The answer is used as-is and its cited lines spot-checked, so the cheapest competent model wins, on its own Command Code credit [M3]. No codebase-Q&A benchmark covers it; trust the spot-checks. |
 | **Explorer** | gpt-6.1-sol at `medium` | SWE-Atlas-QnA: sol medium 60.8 vs sonnet medium 44.9 and high 56.5; Claude leads only at xhigh/max; opus refused 14% of these questions, sol none [C1]. Plan-shaping exploration shouldn't go to a weaker model, which "may not have the ability to properly decide what information matters" ([harness-prior-art.md](harness-prior-art.md)). |
 | **Investigator** | gpt-6.1-sol at `medium`; opus-5.5 when sol implemented | No benchmark measures stuck-diagnosis; the nearest is codebase Q&A, where sol leads at medium [C1]. A cross-family critic helps when the agent "gets stuck in a loop" (Rubber Duck, harness-prior-art.md), hence the other vendor. |
 | **Plan critic** | gpt-6.1-sol | A different family from the orchestrator that wrote the plan; Rubber Duck's biggest wins came from critiquing the plan (harness-prior-art.md). No current benchmark. |
@@ -64,8 +65,7 @@ role runs, it takes the role, at `max`, the only effort it is measured at [C4,V1
 | **Reverse engineering** | gpt-6.1-sol at `xhigh` | SRE Bench: sol 50.8 vs opus 33.6 (82.8% fallback-assisted) and sonnet 30.2 [V10,V2]; at max, and sol's max is no better than xhigh [C1]. |
 | **Science** | opus-5.5 | SciCode: opus 59.3 at medium, 66.9 at max, above sonnet 61.0 and sol ≤55.8 at any effort [C3]. Agentic science ties or leans sol (TB-Science: Vals sol 52.9 vs opus/sonnet 47.1 [V1,V2,V3]; vendor opus 58.7 [A5], sol 57.0 [O8]); the role follows the code benchmark. |
 | **Docs** | sonnet-5.5 | The user's choice; no benchmark covers prose. The orchestrator reviews it. |
-| **Mechanical, Trivial** | composer-2.5 | Well-specified, low-risk work: a *cascade* where the orchestrator's review and the gates accept the draft or send it up the ladder (HydraFusion, harness-prior-art.md). Cheapest model, on the X pool: $0.50 / $2.50 per 1M [U1]. |
-| **Bulk** | composer-2.5 per shard; deepseek-v4.1-flash for UI shards | As Mechanical. UI shards: deepseek-v4.1-flash ties haiku-5.5 on Vibe Code (0.8σ) at a tenth of the $, off Pro; composer-2.5 scores 49.6 [V5]. The Reviewer checks the combined diff. |
+| **Executor** | deepseek-v4.1-flash at `max` | Every task written as a spec, mechanical edits and bulk shards included: a *cascade* where the orchestrator's review and the gates accept the draft or send it up the ladder (HydraFusion, harness-prior-art.md). Cheapest model, on its own Command Code credit: $0.15 / $0.60 per 1M off-peak [M2]. It ties haiku-5.5 on Vibe Code (0.8σ) at a tenth of the $, off Pro, where composer-2.5 scores 49.6 [V5]. The Reviewer checks the combined diff of bulk shards. |
 
 Caveats:
 - **Hardest and refusals.** opus refused 12% of TB4.0 attempts at max [C1], one reason security
@@ -81,11 +81,11 @@ Caveats:
   DeepSeek Harness it runs in.
 - **Retry for deepseek-v4.1-flash** (a quota judgment, not a benchmark result): it already runs at
   `max`, so a failed draft gets one more round with the failing gate output and sol's findings,
-  then goes up the ladder. The retry costs Go allowance, not Pro or Plus.
+  then goes up the ladder. The retry costs Command Code credit, not Pro or Plus.
 
 ### Escalation ladder
 
-`composer-2.5 / deepseek-v4.1-flash → grok-4.7 → gpt-6.1-sol or opus-5.5`.
+`deepseek-v4.1-flash → grok-4.7 → gpt-6.1-sol or opus-5.5`.
 - **deepseek-v4.1-flash replaces haiku-5.5 on the bottom rung.** They tie wherever both are
   measured: Vibe Code 0.8σ [V5], TB4.0 on Vals 1.3σ [T3,V14], TB4.0 in Artificial Analysis's setup
   0.2σ [C4]. The tie goes to the model off Pro; haiku-5.5 stays as its fallback.
@@ -93,7 +93,7 @@ Caveats:
   grok's rung rests on DeepSWE and SWE-Atlas-QnA, where it has no row [C1].
 - **grok-4.7 as the middle rung.** DeepSWE 72.6 and QnA 62.9, close to sol [C1]; TB4.0 37.58%,
   above haiku-5.5 (32.8%) [T1,A2]. It is the step up from a failed cheap draft before spending
-  Claude or Codex quota, and composer-2.5's fallback. Its own fallback, gpt-6.1-sol, keeps the run
+  Claude or Codex quota. Its own fallback, gpt-6.1-sol, keeps the run
   off Claude Pro. It is no role's primary model: where it ties the leaders (native patching,
   [Security](#security)), nothing measures it on the rest of the role.
 - **Build and environment failures skip grok-4.7**: TB4.0 33.3 in Grok Build [C1], 28.8 on Vals
@@ -115,9 +115,9 @@ Not benchmark decisions:
 
 The skill runs on the user's personal subscriptions: **Claude Pro** (Claude Code), **ChatGPT Plus**
 (Codex), **the X Subscription** (Grok Build, plus Cursor access to the Grok and Composer
-models; it replaced SuperGrok on 2026-10-13 [U4]), and **OpenCode Go** (in the DeepSeek Harness).
-The first three were checked against the local CLIs on 2026-10-14 as well as the sources; OpenCode
-Go against the sources (2026-10-21).
+models; it replaced SuperGrok on 2026-10-13 [U4]), and **Command Code GOAT** (in the DeepSeek
+Harness). The first three were checked against the local CLIs on 2026-10-14 as well as the
+sources; Command Code against the sources and the local `dsh` profile (2026-10-24).
 
 - **Claude Pro → Claude Code** (T3 `claudeAgent`). Opus 5.5, Sonnet 5.5, Haiku 5.5. Opus 5.5 is
   included on Pro since 2026-09-22 [P1,P2]; Fable 5.1 is not in Pro's limits (usage credits only)
@@ -135,21 +135,30 @@ Go against the sources (2026-10-21).
   2.5 sit in the "Cursor Models" pool, with "significantly more included usage" than third-party
   models [U1]. "Grok and Cursor usage draw from the same included pool" [U4], so grok-4.7 and
   composer-2.5 share one quota. (Before the X Subscription, a SuperGrok link granted only Grok Bot
-  usage in Cursor [U2,X3].) In T3 the user has hidden every Cursor model except `composer-2.5`
-  (settings checked 2026-10-14). Trust what `orchestrator_capabilities` lists.
-- **OpenCode Go → DeepSeek Harness** (T3 `acpRegistry_deepseek_harness`). $10/month for 29 mostly
-  open-weight models [G1,G2]. Go model ID `deepseek-v4.1-flash`, serving the 1017 build since
-  2026-10-19 [G1,G3]; Go publishes no checkpoint field [G5]. The harness is `dsh`
+  usage in Cursor [U2,X3].) In T3 the `cursor` instance lists only Auto, model id `default`
+  (checked 2026-10-24). Individual plans get Auto's Cost mode only, which "bills as a Cursor-model
+  request and draws from your included pool whatever model serves it"; Cursor doesn't name the
+  models it routes to [U5].
+- **Command Code GOAT → DeepSeek Harness** (T3 `acpRegistry_deepseek_harness`). $10/month for a
+  $70 monthly pool across Command Code's models; DeepSeek V4.1 Flash gets a boosted $80 instead,
+  with "no end date" [M1,M3]. Every plan but the $1 Go plan can call the Provider API, which the
+  harness needs [M4]. Command Code ID `deepseek/deepseek-v4.1-flash`; its model page gives the
+  2026-09-10 release date and no checkpoint [M2]. The harness is `dsh`
   (`deepseek-ai/deepseek-harness`, MIT), a developer preview at 0.2.1-rc.2 [H1], which T3 runs as a
-  local ACP command, `dsh --profile acp`, keyed by `OPENCODE_API_KEY` [G9,H1].
-  - Model id `["opencode-go","deepseek-v4.1-flash"]`, inferred from T3's own test [G9]. Effort
-    option `reasoning_effort`; only `low` / `high` / `max` reach the API [H2].
+  local ACP command, `dsh --profile acp` [G9,H1].
+  - The user's `acp` profile adds `commandcode` as a custom provider (OpenAI Responses API at
+    `https://api.commandcode.ai/provider/v1`, keyed by a Command Code API key) and makes it the
+    default ACP route [L1]. T3 lists the model as `["commandcode","deepseek/deepseek-v4.1-flash"]`.
+  - Effort option `reasoning_effort`: the profile declares `off`, `low`, `high`, and `max`, passed
+    on under the same names [L1]. The Provider API docs name no effort parameter, so whether each
+    level changes the upstream request is unverified [M4].
   - dsh mounts its own `subagent`, `subagent_fork`, and `workflow` tools; its web search needs a
     DeepSeek key; file writes are sandboxed to the workspace [H1].
-  - Known defects on Go: some paths omit the session header (`400 MissingSessionID`) [G1,H3]; a 429
-    is retried for about 16 s, a quota message fails at once [H1,H3]; 0.2.1-rc.2 can corrupt the ACP
-    stream with a stdout log line [H3]. Users reported 429s and 500s on the route 2026-10-18 to
-    10-21 [G7].
+  - Known defects: dsh retries a 429 for about 16 s and fails a quota message at once [H1,H3];
+    Command Code returns 429 `rate_limit_error` when the upstream rate-limits [M4], and a message
+    naming the reset time when a 5-hour or weekly window is spent [M1]. 0.2.1-rc.2 can corrupt the
+    ACP stream with a stdout log line [H3]; the profile disables the shipped `llm-deepseek-account`
+    provider for that reason [L1].
 
 ### The seven models
 
@@ -166,7 +175,7 @@ run it.
 | **gpt-6.1-sol** | Codex | $2 / $10 (≤272k) [O1] | 1M | TB4.0 58.18% max in Codex [T1]; Codex: "near-Astra performance at a lower cost" (local model list) | 52 [O1] |
 | **grok-4.7** | Grok Build | $2 / $6; Fast $4 / $12 (Cursor) [U1,U3] | 256k, 500k long [U3] | TB4.0 37.58% in Grok Build, xhigh [T1]; TB2.1 76.0% [X1] | 46 (xhigh) [C4] |
 | **composer-2.5** | Cursor | $0.50 / $2.50; Fast $3 / $15 [U1] | 200k [X2,V13] | vendor TB2.0 69.3%, SWE-bench Multilingual 79.8% ≈ Opus 4.7 [K1,K2]; Vals SWE-bench 79.6 (#25 of 88), TB2.1 58.4 (#41 of 75) [V13]; no TB4.0 row | unknown |
-| **deepseek-v4.1-flash** | DeepSeek Harness | $0.15 / $0.60 off-peak, 2× at peak [F1,G1] | 1M [F1] | TB4.0 31.8 ±2.6 on Vals (mini-SWE-agent, max) [T3,V14]; vendor TB4.0 42.3 in Claude Code [F2]; no Coding Agent Index row [C1] | 45 (max) [C4] |
+| **deepseek-v4.1-flash** | DeepSeek Harness | $0.15 / $0.60 off-peak, 2× at peak [F1,M2] | 1M [F1] | TB4.0 31.8 ±2.6 on Vals (mini-SWE-agent, max) [T3,V14]; vendor TB4.0 42.3 in Claude Code [F2]; no Coding Agent Index row [C1] | 45 (max) [C4] |
 
 Not used, each compared inside its own price class:
 - gpt-6-astra: TB4.0 58.18% max in Codex [T1], AA 61 [O6], but 5× gpt-6.1-sol's Codex credits per
@@ -174,8 +183,7 @@ Not used, each compared inside its own price class:
 - gpt-6-sol (TB4.0 49.39%) loses to gpt-6.1-sol (58.18%) at the same $2/$10 list price [T1,O7].
 - gpt-6-luna ($0.10/$0.50, TB4.0 16.36%) loses to haiku-5.5 at that price (32.8%) [T1,A1,A2,O7].
 - grok-4.6 (20.30%) and grok-4.5 (12.42%) lose to grok-4.7 [T1].
-- deepseek-v4-pro (0813) loses to deepseek-v4.1-flash at a higher Go price: TB4.0 on Vals 14.1 vs
-  31.8 [T3,G1].
+- deepseek-v4-pro (0813) loses to deepseek-v4.1-flash: TB4.0 on Vals 14.1 vs 31.8 [T3].
 
 Speed: gpt-6.1-sol streams about 48 output tokens/s vs opus-5.5's 95 [C2], but it uses about a
 third of the output tokens per task, so its agent wall time is still lower at equal or better
@@ -411,8 +419,8 @@ Per model:
   Artificial Analysis's own setup shows max slightly above xhigh (TB4.0 56.1 vs 54.0) [C3].
 - **grok-4.7:** measured only at `xhigh` [C1]; Grok Build's levels top out there.
 - **composer-2.5:** exposes no effort setting.
-- **deepseek-v4.1-flash:** measured only at `max` [C4,V14], so it runs at `max`; of its
-  `reasoning_effort` levels only `low`, `high`, and `max` reach the API [H2].
+- **deepseek-v4.1-flash:** measured only at `max` [C4,V14], so it runs at `max`; its
+  `reasoning_effort` levels are `off`, `low`, `high`, and `max` [L1].
 - Levels above `max`: Codex's `ultra` adds "automatic task delegation", i.e. its own subagents; the
   skill never uses them, since the orchestrator owns delegation.
 
@@ -465,7 +473,7 @@ Ways to fewer restrictions, neither confirmed for the user's plans:
 ## Quotas
 
 **Anthropic, OpenAI, and the X Subscription publish no absolute limits or per-model multipliers;
-OpenCode Go does.**
+Command Code does.**
 
 - **Claude Pro.** A 5-hour session limit plus a weekly limit, shared across Claude and Claude Code
   [Q4]. Pro's default model in Claude Code is Opus 5.5 [A10]. No message, token, or hour counts
@@ -486,10 +494,12 @@ OpenCode Go does.**
   not quantified [O9]. An earlier third-party guide gave similar ranges [O5].
 - **X Subscription.** grok-4.7 and composer-2.5 share one pool [U4], whose size nobody has
   measured.
-- **OpenCode Go.** deepseek-v4.1-flash has its own $80 monthly allowance at Go's token prices; a
-  5-hour window may use 20% ($16), a week 50% ($40). Tokens cost double 01:00–04:00 and 06:00–10:00
-  UTC on weekdays [G1,F1]. One hard TB4.0 task at max costs $0.54–0.88 at peak [T3,C4], 0.7–2.2% of
-  a Go week. T3 doesn't show Go's usage on this instance [G8].
+- **Command Code GOAT.** deepseek-v4.1-flash has $80 of monthly credit at Command Code's token
+  prices, the same as DeepSeek's own [M2,M3,F1]. A 5-hour window may spend $14, a week $35; these are
+  GOAT's caps for its $70 pool, and no page says whether the boost raises them [M1,M3]. Tokens cost
+  double 01:00–04:00 and 06:00–10:00 UTC on weekdays [M2,F1]. One hard TB4.0 task at max costs
+  $0.54–0.88 at peak [T3,C4], 1.5–2.5% of a GOAT week. Pay-as-you-go credit bought with `/extra`
+  is spent first once a window is exceeded and is never blocked by one [M1].
 - **Measured plan size** (third-party, full limit priced at API list rates; the two sources
   disagree):
 
@@ -516,8 +526,8 @@ OpenCode Go does.**
 - opus high (56.6) costs 1.9–3.0%; sol max (56.1) costs 2.0–3.7%.
 
 The decisive difference is **who else draws on the pool**. Every Claude child shares Pro with the
-opus-5.5 orchestrator [Q4]; Plus carries only the GPT children, and Go only deepseek-v4.1-flash
-[G1]. Hence SKILL.md's tie-break: where two models fit a role about equally, the non-Claude one; and
+opus-5.5 orchestrator [Q4]; Plus carries only the GPT children, and Command Code only deepseek-v4.1-flash
+[L1]. Hence SKILL.md's tie-break: where two models fit a role about equally, the non-Claude one; and
 the [quota rule](#roles).
 
 ## Re-check when
@@ -532,12 +542,14 @@ the [quota rule](#roles).
 - Anthropic says whether the Cyber Verification Program covers Claude Code on Pro;
 - Artificial Analysis or Datacurve runs deepseek-v4.1-flash on DeepSWE or SWE-Atlas-QnA, or below
   `max` [C1,C4]: that decides `medium`-class Features, Explorer, and the middle rung;
-- DeepSeek Harness fixes its Go session-header and 429 handling, or ships a stable release [H3];
-- OpenCode Go changes the model's allowance, peak hours, or served checkpoint [G1,G5];
+- DeepSeek Harness fixes its 429 handling or the ACP stdout log line, or ships a stable release
+  [H3];
+- Command Code changes the model's credit, windows, or peak hours, or names the checkpoint it
+  serves [M2,M3];
 - the Migration role is re-weighed on Code Migration v1.1, where sonnet leads sol 86.9 to 77.3
   (2.9σ) [V15].
 
-## Sources (accessed 2026-10-14 to 2026-10-16; C1, C4, V5, V14, V15, F, G, and H on 2026-10-21)
+## Sources (accessed 2026-10-14 to 2026-10-16; C1, C4, V5, V14, V15, F, G9, and H on 2026-10-21; M and L on 2026-10-24)
 
 - [P1] Notebookcheck, "Claude Opus 5.5 is included with Pro" — https://www.notebookcheck.net/Claude-Opus-5-5-is-included-with-Pro-and-Free-still-misses-out.1406452.0.html
 - [P2] Christopher Alarcon, "Claude Opus 5.5 vs Fable 5.1: … which plan gets it" — https://christopheralarcon.com/blog/claude-opus-5-5-vs-fable/
@@ -580,6 +592,7 @@ the [quota rule](#roles).
 - [U2] Cursor Help, Grok Bot plans and billing — https://cursor.com/help/grok-bot/plans
 - [U3] Cursor Docs, Grok 4.7 — https://cursor.com/docs/models/grok-4-7
 - [U4] Cursor Help, "What is The X Subscription?" — https://cursor.com/help/the-x-subscription/overview ; Engadget, "X bundles Premium, Grok and Cursor under a single monthly subscription" — https://www.engadget.com/2284943/x-subscription-bundles-premium-grok-cursor/
+- [U5] Cursor Docs, Models & Pricing (Auto modes; "Individual plans have Cost mode only"; Cost mode draws from the included pool) — https://cursor.com/docs/account/pricing ; Cursor Help, Usage and limits — https://cursor.com/help/models-and-usage/usage-limits
 - [K1] DataCamp, Composer 2.5 — https://www.datacamp.com/blog/composer-2-5
 - [K2] The New Stack, Cursor Composer benchmarks — https://thenewstack.io/cursor-composer-benchmarks/
 - [C1] Artificial Analysis, Coding Agent Index (per-agent data embedded in page; re-checked 2026-10-21: v1.5, no V4.1 Flash or DeepSeek Harness row, newest DeepSeek row Codex – V4 Flash 0731) — https://artificialanalysis.ai/agents/coding-agents
@@ -620,13 +633,11 @@ the [quota rule](#roles).
 - [R1] "(When) Should a Software Factory be Lights-off? Benchmarking Code Review Agents on Bug Detection" — https://arxiv.org/html/2610.13668
 - [F1] DeepSeek API docs, Models & Pricing (`deepseek-flash` = DeepSeek-V4.1-Flash-1017; 1M context, 384K max output; off-peak $0.15 / $0.60, cache hit $0.003; peak $0.30 / $1.20, cache hit $0.006; no separate standard rate; peak hours) — https://api-docs.deepseek.com/quick_start/pricing/
 - [F2] DeepSeek API docs, Change Log (2026-10-17 1017 update and vendor benchmarks; 2026-09-10 V4.1 Flash release) — https://api-docs.deepseek.com/updates/
-- [G1] OpenCode docs, Go (models, per-model monthly limits, 5-hour/weekly/monthly shares, token prices, estimated requests, model IDs, `opencode-go/<model-id>`, endpoints, privacy; "Where can I use it": `x-opencode-session`, DeepSeek Harness listed with incomplete session support) — https://opencode.ai/docs/go/
-- [G2] OpenCode, Go landing page (prices, FAQ: free tier 200 requests/day) — https://opencode.ai/go
-- [G3] OpenCode on X, "DeepSeek V4.1 Flash updated to 1017 in OpenCode Go and Free" (2026-10-19; read via api.fxtwitter.com) — https://x.com/opencode/status/2112220734768779441
-- [G5] anomalyco/opencode issue #41969, "Publish exact model versions/checkpoints for Go plan models" (open), with duplicates #56362 and #56690 — https://github.com/anomalyco/opencode/issues/41969
-- [G7] anomalyco/opencode user reports on the Go DeepSeek route: #57613 (429), #56721 (500), #57403 (long TTFT) — https://github.com/anomalyco/opencode/issues/57613 ; https://github.com/anomalyco/opencode/issues/56721 ; https://github.com/anomalyco/opencode/issues/57403
-- [G8] T3 Code, OpenCode provider docs (applies only to T3's `opencode` driver) — https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-opencode.md ; driver kind `opencode` (packages/provider-opencode/src/client.ts), Go usage windows (packages/provider-opencode/src/server/usageLimits.ts), effort as `variant` (packages/provider-opencode/src/server/adapter.ts)
-- [G9] T3 Code at `163bdeaa11` (2026-10-21): ACP provider docs, "Add a local command: For DeepSeek Harness, use `dsh` with arguments `--profile` and `acp`", permissions, models and options — https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-acp.md ; orchestration docs, "ACP Registry V2" and "Provider Support" — docs/orchestration-v2/orchestrator-mcp-server.md ; instance id `acpRegistry_deepseek_harness` from a local command (apps/web/src/components/settings/AddProviderInstanceDialog.environment.browser.test.tsx) ; grouped model id `["opencode-go","deepseek-v4.1-flash"]` (apps/server/src/provider/AcpRegistryProbe.test.ts) ; option application, unadvertised values skipped (packages/provider-acp/src/server/adapter.ts)
-- [H1] DeepSeek Harness at `687f282e86` (0.2.1-rc.2, 2026-10-17) — https://github.com/deepseek-ai/deepseek-harness : README and SAFETY.md; docs/cli-help.md (`dsh acp`); docs/user/guide/providers.md (custom providers, reasoning effort, `off` caveat, image input); packages/acp/acp/README.md and src/model-control.ts (ACP surface, `reasoning_effort`, JSON `[provider, model]` ids); packages/bundle/acp-app (profile, default route); packages/bundle/base/cordis.patch.yml (tools, sandbox, approval, `DSH_PERMISSION_MODE`, web search key); packages/sandbox/sandbox-policy/README.md; packages/fs/tool-fs/README.md (`read_image`); packages/llm/llm-pi-ai (provider-data.generated.ts: `opencode-go` key `OPENCODE_API_KEY`; models.ts: offered levels; stream.ts: error classification); packages/llm/llm/src/error.ts (quota wording) ; npm `@deepseek-ai/dsh` 0.2.1-rc.2 (MIT) — https://www.npmjs.com/package/@deepseek-ai/dsh
-- [H2] pi-ai model catalog, `opencode-go` entry for `deepseek-v4.1-flash` (dist/providers/data/opencode-go.json: endpoint, `thinkingLevelMap`, input, cost, compat, limits) in `@earendil-works/pi-ai` 1.1.0 (the version dsh's lockfile pins) and 1.3.0 — https://www.npmjs.com/package/@earendil-works/pi-ai ; https://github.com/earendil-works/pi
-- [H3] DeepSeek Harness discussions (open): #5495 and #10190 (`x-opencode-session`, MissingSessionID, pinned `api:`), #9972 (auto-review on Go routes), #7926 and #8992 (`Retry-After` dropped, local backoff), #9636 (401/403 before 429), #3338 (quota wording terminal), #9966 (`acp` profile stdout log line, T3 on Windows), #4276 (permission requests carry only a tool-call id) — https://github.com/deepseek-ai/deepseek-harness/discussions/5495 (others at the same path by number)
+- [M1] Command Code docs, Usage Limits (plan table: price, monthly usage, 5-hour and weekly caps; rolling windows, limit message, `/extra`, `/upgrade`) — https://commandcode.ai/docs/resources/usage-limits ; GOAT plan — https://commandcode.ai/docs/plans/goat
+- [M2] Command Code, DeepSeek V4.1 Flash (latest) model page (ID, off-peak and peak prices, peak hours, 1M context, "Released September 10, 2026", no checkpoint) — https://commandcode.ai/models/deepseek-v4-1-flash
+- [M3] Command Code docs, Pricing Limits (DeepSeek V4.1 Flash boosted monthly credit: Go $10, GOAT $80, Pro $90; "no end date") — https://commandcode.ai/docs/resources/pricing-limits
+- [M4] Command Code docs, Provider API (base URL; Chat Completions, Responses, and Messages endpoints; `vendor/model` ids; "Every plan except the Go plan has API access"; error codes) — https://commandcode.ai/docs/provider
+- [L1] The user's dsh `acp` profile, `~/.dsh/profiles/acp/cordis.patch.yml` (dsh 0.2.1-rc.2, read 2026-10-24): `commandcode` provider, `openai-responses`, base URL, `reasoningEfforts`, default ACP route, `llm-deepseek-account` disabled
+- [G9] T3 Code at `163bdeaa11` (2026-10-21): ACP provider docs, "Add a local command: For DeepSeek Harness, use `dsh` with arguments `--profile` and `acp`", permissions, models and options — https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-acp.md ; orchestration docs, "ACP Registry V2" and "Provider Support" — docs/orchestration-v2/orchestrator-mcp-server.md ; instance id `acpRegistry_deepseek_harness` from a local command (apps/web/src/components/settings/AddProviderInstanceDialog.environment.browser.test.tsx) ; option application, unadvertised values skipped (packages/provider-acp/src/server/adapter.ts)
+- [H1] DeepSeek Harness at `687f282e86` (0.2.1-rc.2, 2026-10-17) — https://github.com/deepseek-ai/deepseek-harness : README and SAFETY.md; docs/cli-help.md (`dsh acp`); docs/user/guide/providers.md (custom providers, reasoning effort, `off` caveat, image input); packages/acp/acp/README.md and src/model-control.ts (ACP surface, `reasoning_effort`, JSON `[provider, model]` ids); packages/bundle/acp-app (profile, default route); packages/bundle/base/cordis.patch.yml (tools, sandbox, approval, `DSH_PERMISSION_MODE`, web search key); packages/sandbox/sandbox-policy/README.md; packages/fs/tool-fs/README.md (`read_image`); packages/llm/llm-pi-ai (models.ts: offered levels; stream.ts: error classification); packages/llm/llm/src/error.ts (quota wording) ; npm `@deepseek-ai/dsh` 0.2.1-rc.2 (MIT) — https://www.npmjs.com/package/@deepseek-ai/dsh
+- [H3] DeepSeek Harness discussions (open): #7926 and #8992 (`Retry-After` dropped, local backoff), #9636 (401/403 before 429), #3338 (quota wording terminal), #9966 (`acp` profile stdout log line, T3 on Windows), #4276 (permission requests carry only a tool-call id) — https://github.com/deepseek-ai/deepseek-harness/discussions/7926 (others at the same path by number)
