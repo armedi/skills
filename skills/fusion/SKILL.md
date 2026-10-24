@@ -205,7 +205,7 @@ Dispatch only these six; another model only when the user names it.
 | sonnet-5.5 | `claudeAgent` | Anthropic |
 | gpt-6.1-sol | `codex` | OpenAI |
 | grok-4.7 | `grok` | SpaceXAI |
-| composer-2.5 | `cursor` | SpaceXAI |
+| cursor-auto | `cursor` | SpaceXAI |
 | deepseek-v4.1-flash | `acpRegistry_deepseek_harness` | Command Code |
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises.
@@ -213,7 +213,6 @@ Dispatch only these six; another model only when the user names it.
   the caps below.
 - **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
   opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
-- On `cursor`, also pass `fastMode: false`.
 - Children inherit this thread's `runtimeMode` except `full-access`: when this thread has it, pass
   top-level `runtimeMode: "full-access"`. Under `auto`, the DeepSeek Harness runs shell commands
   and edits without approval, inside a workspace-write sandbox.
