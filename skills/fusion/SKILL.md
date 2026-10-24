@@ -78,9 +78,7 @@ tree still matches the baseline.
    - Re-run every gate yourself; a gate the child turned red is a defect.
    - Judge each objection or stop report; a valid one changes the plan before rework.
 
-   Every defect goes to step 7. Done when every
-   check above has passed or its defect is sent to step 7, and every objection and stop report is
-   judged.
+   Done when every check above has passed or its defect is sent to step 7.
 6. **Cross-review** the task's first diff that passes step 5, unless it comes from a mechanical spec
    (rename, formatting, a one-line edit) whose gates fully cover it: send the **Reviewer** a new
    read-only `delegate_task` with the original brief and both snapshot ids: review
