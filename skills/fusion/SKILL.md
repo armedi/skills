@@ -201,33 +201,24 @@ For every role but the Executor, pick the **lowest** level whose row matches:
 
 Dispatch only these six; another model only when the user names it.
 
-| Short name | `providerInstanceId` | `model` | Provider |
-|---|---|---|---|
-| opus-5.5 | `claudeAgent` | `claude-opus-5-5` | Anthropic |
-| sonnet-5.5 | `claudeAgent` | `claude-sonnet-5-5` | Anthropic |
-| gpt-6.1-sol | `codex` | `gpt-6.1-sol` | OpenAI |
-| grok-4.7 | `grok` | `grok-4.7` | SpaceXAI |
-| composer-2.5 | `cursor` | `composer-2.5` | SpaceXAI |
-| deepseek-v4.1-flash | `acpRegistry_deepseek_harness` | `["commandcode","deepseek/deepseek-v4.1-flash"]` | Command Code |
+| Short name | `providerInstanceId` | Provider |
+|---|---|---|
+| opus-5.5 | `claudeAgent` | Anthropic |
+| sonnet-5.5 | `claudeAgent` | Anthropic |
+| gpt-6.1-sol | `codex` | OpenAI |
+| grok-4.7 | `grok` | SpaceXAI |
+| composer-2.5 | `cursor` | SpaceXAI |
+| deepseek-v4.1-flash | `acpRegistry_deepseek_harness` | Command Code |
 
-- deepseek-v4.1-flash's `model` id is the bracketed text above as one literal string; pass it
-  verbatim, not as an array.
-- Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises:
-  `{ "reasoningEffort": "medium" }` on `codex` and `grok`; `{ "effort": "medium" }` on
-  `claudeAgent`. Pass only advertised options and levels. DeepSeek Harness currently exposes no
-  effort option through ACP/T3, even though Command Code's direct interface supports effort;
-  omit it. composer-2.5 also has no effort option.
-  When a model's levels stop short of the chosen effort,
-  use its highest supported level within the caps below.
+- Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises.
+  When a model lacks the chosen effort, use the next level up it supports, or its highest within
+  the caps below.
 - **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
-  opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains. grok-4.7 at `xhigh`:
-  its advertised effort levels stop there. `max` is the ceiling for every model.
+  opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
 - On `cursor`, also pass `fastMode: false`.
-- When `orchestrator_capabilities` reports this thread's `runtimeMode` as `full-access`, pass
-  top-level `runtimeMode: "full-access"`. Otherwise omit `runtimeMode`; children inherit this
-  thread's mode. The DeepSeek Harness
-  has no `allow_all` option: under `auto` it runs shell commands and edits in the repository without
-  approval, inside a workspace-write sandbox.
+- Children inherit this thread's `runtimeMode` except `full-access`: when this thread has it, pass
+  top-level `runtimeMode: "full-access"`. Under `auto`, the DeepSeek Harness runs shell commands
+  and edits without approval, inside a workspace-write sandbox.
 - **Failed runs.** When a run fails with a provider error rather than the model's work, restore the
   baseline as in step 7 if the run left edits, then re-dispatch the same brief once under a new
   `clientRequestId`; if that also fails, re-dispatch on another model from the table that fits
