@@ -1,4 +1,4 @@
-# Model roles (compiled 2026-10-15; security re-checked 2026-10-16)
+# Model roles (compiled 2026-10-15; security re-checked 2026-10-16; deepseek-v4.1-flash added 2026-10-21)
 
 Evidence behind the `fusion` skill's **Models**, **Roles**, and **Effort** sections in
 [SKILL.md](../../skills/fusion/SKILL.md). SKILL.md routes; this file explains why.
@@ -18,6 +18,11 @@ Conventions:
   2.0/2.1 ≠ 4.0; TB4.0 rows are model+harness pairs; Claude Code/Codex ≠ mini-SWE-agent ≠ OpenHands.
 - "±" is the source's own standard error (1σ). A gap is compared as diff ÷ √(SE₁² + SE₂²),
   treating rows as independent.
+- `deepseek-v4.1-flash` is DeepSeek-V4.1-Flash-1017 as OpenCode Go serves it. "Sept build" is its
+  2026-09-10 predecessor, cited only where 1017 has no row.
+- TB4.0 σ for Artificial Analysis Intelligence Index rows, which publish none, is the binomial
+  √(p(1−p)/n) at n = 198 attempts (66 tasks × 3 [C1]). Repeats of one task are correlated, so this
+  understates the true σ.
 - Claude rows on Vals and Artificial Analysis include attempts that Anthropic's safeguards handed
   to an older Claude model ("fallback-assisted"), which flatters some Claude scores (see
   [Refusals and safeguards](#refusals-and-safeguards)).
@@ -28,6 +33,10 @@ Each role takes the best measured result at the effort it runs. Where two models
 equally, it takes the non-Claude one, to keep Claude Pro for the opus-5.5 orchestrator
 ([Quotas](#quotas)). Where a choice rests on the user's judgment rather than a benchmark, the row
 says so.
+
+**Quota rule (2026-10-21).** Claude Pro and ChatGPT Plus run out first; deepseek-v4.1-flash draws
+on OpenCode Go instead [G1]. Where it measures within 2σ of a Pro or Plus model at the effort the
+role runs, it takes the role, at `max`, the only effort it is measured at [C4,V14].
 
 ### Read-only roles
 
@@ -45,18 +54,18 @@ says so.
 |---|---|---|
 | **Hardest** | opus-5.5 at `high` | At equal effort opus leads sol on TB4.0 by 4–5 points; opus high ties sol max (56.6 vs 56.1) [C3]; #1 on TB4.0 at max [T1]; vendor SWE-bench Pro subset 95.3% at high [A8]. |
 | **Greenfield** | opus-5.5 at `high` | ProgramBench fully resolved: opus 18.5, sonnet 6.5, sol 3.0 [V6]. |
-| **Feature** | gpt-6.1-sol | DeepSWE: sol medium 72.0 = sonnet max 72.0 > opus max 68.4; opus below max unknown [C1]. Vendor: sol high 75.2% vs opus 74.2% [O8,A5]. Agent Arena: near tie [W2]. About the same quality, off Claude Pro. |
+| **Feature** | gpt-6.1-sol at `medium`; deepseek-v4.1-flash when the brief qualifies for `low` | DeepSWE: sol medium 72.0 = sonnet max 72.0 > opus max 68.4; opus below max unknown [C1]. Vendor: sol high 75.2% vs opus 74.2% [O8,A5]. Agent Arena: near tie [W2]. About the same quality, off Claude Pro. A `low`-class brief goes to deepseek-v4.1-flash, which at max ties sol and opus at `low` on TB4.0 (33.8 vs 30.8 and 31.3) but trails sol at `medium` by 2.9σ [C4]. |
 | **Terminal** | gpt-6.1-sol at `xhigh` | opus medium beats sol medium by 4.5 TB4.0 points but only ties sol xhigh (52.5 vs 54.0), at about the same share of each plan's week [C3]. A tie, so the non-Claude model. Unknown-cause build failures stay in Hardest. |
 | **Algorithm** | gpt-6.1-sol at `xhigh` | IOI: sol 96.9 ($1.26) vs opus 95.1 ($5.26) [V8], at max; sol's max is no better than xhigh [C1]. |
 | **Visual bug** | opus-5.5 | SWE-bench Multimodal: opus 70.2 vs sonnet 58.3 vs sol 43.5 [V4]. Vendor: opus at its lowest effort reads dense charts better than Opus 5 at its highest [A9]. No model takes video or audio. |
-| **UI** | sonnet-5.5 | Vibe Code: sonnet 92.4; haiku 90.4 and opus 90.3 within noise; sol 88.9; composer 49.6 [V5]; all at max. WebDev Arena ranks opus #1 [W1]. Claude Code reads images, so the brief carries the mockup paths. |
-| **Migration** | gpt-6.1-sol; sonnet-5.5 into Python | Code Migration: sonnet 69.8, opus 66.7, sol 65.1 (±4.3), a tie, so the non-Claude model. Into Python: sol 55.4 vs sonnet 70.6 [V7]. |
+| **UI** | deepseek-v4.1-flash; sonnet-5.5 when built from a mockup image | Vibe Code (OpenHands, all at max): sonnet 92.4 ±1.3, haiku 90.4, opus 90.3, sol 88.9, deepseek-v4.1-flash 87.7 ±2.8, composer 49.6 [V5]; deepseek-v4.1-flash is 1.5σ behind sonnet at 1/54 of the $, off Pro. Vibe Code builds from text; on images (SWE-bench Multimodal) the Sept build scored 46.5 vs sonnet 58.3 [V4], so mockups stay on sonnet. WebDev Arena ranks opus #1 [W1]. The brief carries the image paths. |
+| **Migration** | gpt-6.1-sol; sonnet-5.5 into Python | Code Migration: sonnet 69.8, opus 66.7, sol 65.1 (±4.3), a tie, so the non-Claude model. Into Python: sol 55.4 vs sonnet 70.6 [V7]. deepseek-v4.1-flash trails sol: v1.1 67.5 vs 77.3, 2.4σ [V15]. |
 | **Security** | gpt-6.1-sol | Only sol and opus are measured on both native and managed-language security work, and they tie: CyberBench Patch opus 85.7 vs sol 78.6 (1.0σ) [V9]; secure Python code sol 34.1 vs opus 33.5 [E1]. The tie goes to sol, which also refused nothing where opus refused 12–14% [C1]. See [Security](#security). |
 | **Reverse engineering** | gpt-6.1-sol at `xhigh` | SRE Bench: sol 50.8 vs opus 33.6 (82.8% fallback-assisted) and sonnet 30.2 [V10,V2]; at max, and sol's max is no better than xhigh [C1]. |
 | **Science** | opus-5.5 | SciCode: opus 59.3 at medium, 66.9 at max, above sonnet 61.0 and sol ≤55.8 at any effort [C3]. Agentic science ties or leans sol (TB-Science: Vals sol 52.9 vs opus/sonnet 47.1 [V1,V2,V3]; vendor opus 58.7 [A5], sol 57.0 [O8]); the role follows the code benchmark. |
 | **Docs** | sonnet-5.5 | The user's choice; no benchmark covers prose. The orchestrator reviews it. |
 | **Mechanical, Trivial** | composer-2.5 | Well-specified, low-risk work: a *cascade* where the orchestrator's review and the gates accept the draft or send it up the ladder (HydraFusion, harness-prior-art.md). Cheapest model, on the X pool: $0.50 / $2.50 per 1M [U1]. |
-| **Bulk** | composer-2.5 per shard; haiku-5.5 for UI shards | As Mechanical. composer-2.5 scores 49.6 on Vibe Code vs haiku-5.5's 90.4 at $6.07 [V5,V13], so UI shards go to haiku. The Reviewer checks the combined diff. |
+| **Bulk** | composer-2.5 per shard; deepseek-v4.1-flash for UI shards | As Mechanical. UI shards: deepseek-v4.1-flash ties haiku-5.5 on Vibe Code (0.8σ) at a tenth of the $, off Pro; composer-2.5 scores 49.6 [V5]. The Reviewer checks the combined diff. |
 
 Caveats:
 - **Hardest and refusals.** opus refused 12% of TB4.0 attempts at max [C1], one reason security
@@ -66,10 +75,22 @@ Caveats:
   opus-5.5. Offensive work (exploits, pentesting) is not the role's work.
 - **Memory-safety bugs** go to Security when they are vulnerabilities. A plain crash is an
   ordinary bug: Hardest if the cause is unknown, Feature if known.
+- **deepseek-v4.1-flash stays off the hard roles.** TB4.0 33.8 vs opus medium 52.5 and sol xhigh
+  54.0 [C4]; the Sept build scored IOI 40.3 [V11] and SWE-bench Multimodal 46.5 [V4]; no
+  reverse-engineering or secure-code row. All its figures come from harnesses other than the
+  DeepSeek Harness it runs in.
+- **Retry for deepseek-v4.1-flash** (a quota judgment, not a benchmark result): it already runs at
+  `max`, so a failed draft gets one more round with the failing gate output and sol's findings,
+  then goes up the ladder. The retry costs Go allowance, not Pro or Plus.
 
 ### Escalation ladder
 
-`composer-2.5 / haiku-5.5 → grok-4.7 → gpt-6.1-sol or opus-5.5`.
+`composer-2.5 / deepseek-v4.1-flash → grok-4.7 → gpt-6.1-sol or opus-5.5`.
+- **deepseek-v4.1-flash replaces haiku-5.5 on the bottom rung.** They tie wherever both are
+  measured: Vibe Code 0.8σ [V5], TB4.0 on Vals 1.3σ [T3,V14], TB4.0 in Artificial Analysis's setup
+  0.2σ [C4]. The tie goes to the model off Pro; haiku-5.5 stays as its fallback.
+- **deepseek-v4.1-flash is not the middle rung.** It ties grok-4.7 on TB4.0 and Vibe Code, but
+  grok's rung rests on DeepSWE and SWE-Atlas-QnA, where it has no row [C1].
 - **grok-4.7 as the middle rung.** DeepSWE 72.6 and QnA 62.9, close to sol [C1]; TB4.0 37.58%,
   above haiku-5.5 (32.8%) [T1,A2]. It is the step up from a failed cheap draft before spending
   Claude or Codex quota, and composer-2.5's fallback. Its own fallback, gpt-6.1-sol, keeps the run
@@ -78,8 +99,8 @@ Caveats:
 - **Build and environment failures skip grok-4.7**: TB4.0 33.3 in Grok Build [C1], 28.8 on Vals
   [V12].
 - **sonnet-5.5 is off the ladder.** Below max it buys about what opus-5.5 buys one effort level
-  lower [C3,A8], so a failed sonnet-5.5 run moves to the top rung. Its roles are niches: UI and
-  migration into Python [V5,V7], and Docs by the user's choice.
+  lower [C3,A8], so a failed sonnet-5.5 run moves to the top rung. Its roles are niches: UI from a
+  mockup and migration into Python [V4,V7], and Docs by the user's choice.
 - **Top rung, two vendors.** A second failure on one top-rung model goes to the other vendor.
 
 ### Removed by the user
@@ -93,9 +114,10 @@ Not benchmark decisions:
 ## Subscriptions and models
 
 The skill runs on the user's personal subscriptions: **Claude Pro** (Claude Code), **ChatGPT Plus**
-(Codex), and **the X Subscription** (Grok Build, plus Cursor access to the Grok and Composer
-models; it replaced SuperGrok on 2026-10-13 [U4]). Checked against the local CLIs on 2026-10-14 as
-well as the sources.
+(Codex), **the X Subscription** (Grok Build, plus Cursor access to the Grok and Composer
+models; it replaced SuperGrok on 2026-10-13 [U4]), and **OpenCode Go** (in the DeepSeek Harness).
+The first three were checked against the local CLIs on 2026-10-14 as well as the sources; OpenCode
+Go against the sources (2026-10-21).
 
 - **Claude Pro → Claude Code** (T3 `claudeAgent`). Opus 5.5, Sonnet 5.5, Haiku 5.5. Opus 5.5 is
   included on Pro since 2026-09-22 [P1,P2]; Fable 5.1 is not in Pro's limits (usage credits only)
@@ -115,12 +137,26 @@ well as the sources.
   composer-2.5 share one quota. (Before the X Subscription, a SuperGrok link granted only Grok Bot
   usage in Cursor [U2,X3].) In T3 the user has hidden every Cursor model except `composer-2.5`
   (settings checked 2026-10-14). Trust what `orchestrator_capabilities` lists.
+- **OpenCode Go → DeepSeek Harness** (T3 `acpRegistry_deepseek_harness`). $10/month for 29 mostly
+  open-weight models [G1,G2]. Go model ID `deepseek-v4.1-flash`, serving the 1017 build since
+  2026-10-19 [G1,G3]; Go publishes no checkpoint field [G5]. The harness is `dsh`
+  (`deepseek-ai/deepseek-harness`, MIT), a developer preview at 0.2.1-rc.2 [H1], which T3 runs as a
+  local ACP command, `dsh --profile acp`, keyed by `OPENCODE_API_KEY` [G9,H1].
+  - Model id `["opencode-go","deepseek-v4.1-flash"]`, inferred from T3's own test [G9]. Effort
+    option `reasoning_effort`; only `low` / `high` / `max` reach the API [H2].
+  - dsh mounts its own `subagent`, `subagent_fork`, and `workflow` tools; its web search needs a
+    DeepSeek key; file writes are sandboxed to the workspace [H1].
+  - Known defects on Go: some paths omit the session header (`400 MissingSessionID`) [G1,H3]; a 429
+    is retried for about 16 s, a quota message fails at once [H1,H3]; 0.2.1-rc.2 can corrupt the ACP
+    stream with a stdout log line [H3]. Users reported 429s and 500s on the route 2026-10-18 to
+    10-21 [G7].
 
-### The six models
+### The seven models
 
 Each runs in its vendor's own harness, the one its TB4.0 row was measured in: Claude models in
 Claude Code, GPT models in Codex, grok-4.7 in Grok Build [T1]; composer-2.5 in the Cursor agent,
-with no TB4.0 row.
+with no TB4.0 row; deepseek-v4.1-flash in the DeepSeek Harness, where no independent benchmark has
+run it.
 
 | Model | Harness | List $ per 1M in / out | Context | Coding signals | AA Intelligence Index |
 |---|---|---|---|---|---|
@@ -128,8 +164,9 @@ with no TB4.0 row.
 | **sonnet-5.5** | Claude Code | $2 / $10 [A1] | 1M | TB4.0 61.82% in Claude Code (#2) [T1]; vendor SWE-bench Pro 81.3% [A3] | 56 (max) [A2] |
 | **haiku-5.5** | Claude Code | $0.10 / $0.50 (≤100k prompt) [A1] | 1M | TB4.0 32.8% (AA, max) [A2]; vendor SWE-bench Pro 64.8% [A3] | 43 (max) [A2] |
 | **gpt-6.1-sol** | Codex | $2 / $10 (≤272k) [O1] | 1M | TB4.0 58.18% max in Codex [T1]; Codex: "near-Astra performance at a lower cost" (local model list) | 52 [O1] |
-| **grok-4.7** | Grok Build | $2 / $6; Fast $4 / $12 (Cursor) [U1,U3] | 256k, 500k long [U3] | TB4.0 37.58% in Grok Build, xhigh [T1]; TB2.1 76.0% [X1] | unknown (Grok 4.6 high: 61) [O6] |
+| **grok-4.7** | Grok Build | $2 / $6; Fast $4 / $12 (Cursor) [U1,U3] | 256k, 500k long [U3] | TB4.0 37.58% in Grok Build, xhigh [T1]; TB2.1 76.0% [X1] | 46 (xhigh) [C4] |
 | **composer-2.5** | Cursor | $0.50 / $2.50; Fast $3 / $15 [U1] | 200k [X2,V13] | vendor TB2.0 69.3%, SWE-bench Multilingual 79.8% ≈ Opus 4.7 [K1,K2]; Vals SWE-bench 79.6 (#25 of 88), TB2.1 58.4 (#41 of 75) [V13]; no TB4.0 row | unknown |
+| **deepseek-v4.1-flash** | DeepSeek Harness | $0.15 / $0.60 off-peak, 2× at peak [F1,G1] | 1M [F1] | TB4.0 31.8 ±2.6 on Vals (mini-SWE-agent, max) [T3,V14]; vendor TB4.0 42.3 in Claude Code [F2]; no Coding Agent Index row [C1] | 45 (max) [C4] |
 
 Not used, each compared inside its own price class:
 - gpt-6-astra: TB4.0 58.18% max in Codex [T1], AA 61 [O6], but 5× gpt-6.1-sol's Codex credits per
@@ -137,6 +174,8 @@ Not used, each compared inside its own price class:
 - gpt-6-sol (TB4.0 49.39%) loses to gpt-6.1-sol (58.18%) at the same $2/$10 list price [T1,O7].
 - gpt-6-luna ($0.10/$0.50, TB4.0 16.36%) loses to haiku-5.5 at that price (32.8%) [T1,A1,A2,O7].
 - grok-4.6 (20.30%) and grok-4.5 (12.42%) lose to grok-4.7 [T1].
+- deepseek-v4-pro (0813) loses to deepseek-v4.1-flash at a higher Go price: TB4.0 on Vals 14.1 vs
+  31.8 [T3,G1].
 
 Speed: gpt-6.1-sol streams about 48 output tokens/s vs opus-5.5's 95 [C2], but it uses about a
 third of the output tokens per task, so its agent wall time is still lower at equal or better
@@ -149,21 +188,21 @@ comparable only within a row. Vals runs use max effort unless noted [V1,V2,V3,V1
 
 | Category | Evidence | Verdict |
 |---|---|---|
-| **Long-horizon repo implementation** (features, bug fixes) | DeepSWE (native CLI): sol xhigh 73.2, grok xhigh 72.6, sol medium 72.0 = sonnet max 72.0 > opus max 68.4; opus below max unknown [C1]. Vendor: sol high 75.2% [O8], opus 74.2% [A5]; opus internal repo tasks medium 86.6 / high 88.4 [A8]. Datacurve's board has no rows for these versions [D1]. | **sol ≥ Claude**, grok close |
-| **Terminal / build / ops / environment** | TB4.0 at max: opus 64.85, sonnet 61.82, sol 58.18 [T1,T2]; Vals: opus 65.15, sonnet 64.14, sol 55.05 [T3]; Mercor (harness unstated): sol 59.6, opus 58.3, sonnet 51.5 [T4]; Snorkel Agentic Coding 2.0: sol 42.8 vs opus 40.4 [T6]. Same effort (AA setup): opus 4–5 pts ahead of sol; sonnet behind both below xhigh [C3]. grok: 33.3 in Grok Build [C1], 28.8 on Vals [V12]. | **opus at equal effort**; sol ≈ opus one level lower; sonnet only at max |
-| **Codebase Q&A / exploration** | SWE-Atlas-QnA: sonnet max 66.9, opus max 66.4, grok 62.9, sonnet xhigh 62.1, sol 57.8–61.0, sonnet high 56.5, sonnet medium 44.9 [C1]; opus below max unknown; opus refused 14% [C1]. | **sol at medium/high**; Claude only at xhigh/max |
-| **Visual: bugs reported with screenshots** | SWE-bench Multimodal: opus 70.2, sonnet 58.3, haiku 44.0, sol 43.5, grok 42.9 [V4,V11,V12]. Vendor: opus at low reads dense charts better than Opus 5 at its highest effort [A9]. | **opus, clearly** |
-| **Frontend / web apps from scratch** | Vibe Code Bench v1.1 (OpenHands): sonnet 92.4 ($31), haiku 90.4 ($6.07), opus 90.3 ($58), sol 88.9 ($6.23), grok 86.2 ($15.83), composer 49.6 (Cursor CLI, $0.50) [V5]. WebDev Arena: opus-5.5-max #1 at 1813 [W1]; sol-max #4 at ~1760 [W3]. | **sonnet**; haiku/opus within noise; sol −3.5 |
-| **Program from spec, greenfield** | ProgramBench fully resolved: opus 18.5, sonnet 6.5, sol 3.0, haiku 2.5, grok 0.5 [V6,V11,V12]. | **opus** |
-| **Cross-language migration** | Code Migration: sonnet 69.8, opus 66.7, sol 65.1 (±4.3), grok 44.8, haiku 44.6. Into Python: sol 55.4 vs sonnet 70.6 [V7,V11,V12]. | **Tie** sonnet/opus/sol, except Python targets |
-| **Algorithms / competitive programming** | IOI: sol 96.9 ($1.26), opus 95.1 ($5.26), sonnet 83.1, grok 57.7, haiku 47.3 [V8,V11,V12]. | **sol ≈ opus** |
-| **Scientific computing** | SciCode: opus 66.9 (max) / 59.3 (medium) > sonnet 61.0 > sol ≤55.8 [C3]. TB-Science: Vals sol 52.9 vs opus/sonnet 47.1 [V1,V2,V3]; vendor opus 58.7 [A5], sol 57.0 [O8]. | **opus** on code; tie on agentic science |
-| **Security: native vulnerabilities** | CyberBench Patch track: haiku 89.3, opus-CVP 87.5, sonnet 87.5, opus 85.7, grok 83.9, sol 78.6; within ~1σ except sol [V9]. Details in [Security](#security). | **Tie on patching** |
+| **Long-horizon repo implementation** (features, bug fixes) | DeepSWE (native CLI): sol xhigh 73.2, grok xhigh 72.6, sol medium 72.0 = sonnet max 72.0 > opus max 68.4; opus below max unknown [C1]. Vendor: sol high 75.2% [O8], opus 74.2% [A5]; opus internal repo tasks medium 86.6 / high 88.4 [A8]. Datacurve's board has no rows for these versions [D1]. deepseek-v4.1-flash: no independent row; V4 Flash 0731 54.3 in Codex [C1]. | **sol ≥ Claude**, grok close |
+| **Terminal / build / ops / environment** | TB4.0 at max: opus 64.85, sonnet 61.82, sol 58.18 [T1,T2]; Vals: opus 65.15, sonnet 64.14, sol 55.05, haiku 36.4, deepseek-v4.1-flash 31.8 ±2.6 [T3,V14]; Mercor (harness unstated): sol 59.6, opus 58.3, sonnet 51.5 [T4]; Snorkel Agentic Coding 2.0: sol 42.8 vs opus 40.4 [T6]. Same effort (AA setup): opus 4–5 pts ahead of sol; sonnet behind both below xhigh [C3]; deepseek-v4.1-flash max 33.8 ≈ haiku max 32.8 [C4]. grok: 33.3 in Grok Build [C1], 28.8 on Vals [V12]. | **opus at equal effort**; sol ≈ opus one level lower; sonnet only at max |
+| **Codebase Q&A / exploration** | SWE-Atlas-QnA: sonnet max 66.9, opus max 66.4, grok 62.9, sonnet xhigh 62.1, sol 57.8–61.0, sonnet high 56.5, sonnet medium 44.9 [C1]; opus below max unknown; opus refused 14% [C1]. deepseek-v4.1-flash unknown [C1]. | **sol at medium/high**; Claude only at xhigh/max |
+| **Visual: bugs reported with screenshots** | SWE-bench Multimodal: opus 70.2, sonnet 58.3, Sept build 46.5, haiku 44.0, sol 43.5, grok 42.9; no deepseek-v4.1-flash row [V4,V11,V12]. Vendor: opus at low reads dense charts better than Opus 5 at its highest effort [A9]. | **opus, clearly** |
+| **Frontend / web apps from scratch** | Vibe Code Bench v1.1 (OpenHands, all at max): sonnet 92.4 ±1.3 ($31), haiku 90.4 ±1.7 ($6.07), opus 90.3 ±1.5 ($58), sol 88.9 ±1.9 ($6.23), deepseek-v4.1-flash 87.7 ±2.8 ($0.58), grok 86.2 ($15.83), composer 49.6 (Cursor CLI, $0.50) [V5]. WebDev Arena: opus-5.5-max #1 at 1813 [W1]; sol-max #4 at ~1760 [W3]. | **sonnet** first, but every other frontier row and deepseek-v4.1-flash within 2σ of it |
+| **Program from spec, greenfield** | ProgramBench fully resolved: opus 18.5, sonnet 6.5, sol 3.0, haiku 2.5, grok 0.5, Sept build 0.5 [V6,V11,V12]. | **opus** |
+| **Cross-language migration** | Code Migration (v1): sonnet 69.8, opus 66.7, sol 65.1 (±4.3), grok 44.8, haiku 44.6, deepseek-v4.1-flash 44.2. Into Python: sol 55.4 vs sonnet 70.6 [V7,V11,V12]. Code Migration v1.1 (2026-10-19): sonnet 86.9 ±1.5, opus 81.0, sol 77.3 ±3.0, deepseek-v4.1-flash 67.5 ±2.8, grok 53.2, haiku 52.4 [V15]. | **Tie** sonnet/opus/sol on v1, except Python targets; v1.1 not yet weighed (see [Re-check](#re-check-when)) |
+| **Algorithms / competitive programming** | IOI: sol 96.9 ($1.26), opus 95.1 ($5.26), sonnet 83.1, grok 57.7, haiku 47.3, Sept build 40.3 [V8,V11,V12]. | **sol ≈ opus** |
+| **Scientific computing** | SciCode: opus 66.9 (max) / 59.3 (medium) > sonnet 61.0 > sol ≤55.8 [C3]; deepseek-v4.1-flash 55.9, haiku 54.9, grok 57.4, all at their top effort [C4]. TB-Science: Vals sol 52.9 vs opus/sonnet 47.1 [V1,V2,V3]; vendor opus 58.7 [A5], sol 57.0 [O8]. | **opus** on code; tie on agentic science |
+| **Security: native vulnerabilities** | CyberBench Patch track: haiku 89.3, opus-CVP 87.5, sonnet 87.5, opus 85.7, Sept build 85.7 (high, $0.05), grok 83.9, sol 78.6; within ~1σ except sol; no deepseek-v4.1-flash row [V9]. Details in [Security](#security). | **Tie on patching** |
 | **Security: secure code, managed languages** | Endor Labs Agent Security League (Python): sol 34.1, opus 33.5, composer 14.0; no sonnet, haiku, or grok rows [E1]. | **sol ≈ opus** |
 | **Binary reverse engineering** | SRE Bench: sol 50.8 (#2), opus 33.6, sonnet 30.2, haiku 5.7, grok 3.8 [V10,V11,V12]. | **sol, clearly** |
 | **Code review / bug finding** | No current-generation data. Previous generation: opus-5 found 79.6% of pre-merge bugs in its top 5 comments vs gpt-5.6-sol 65.6% and sonnet-5 64.7% [R1]. Vendor: early testers report stronger review from Opus 5.5 than Opus 5 [A9]. | unknown |
 | **Mixed real-user agent tasks** | Agent Arena: opus (high) #2 +12.15% $1.31; sonnet (max) #3 +12.5% $2.74; sol (max) #5 +11.23% $0.56 (Arena posts read via search excerpts) [W2]. | **Near tie** |
-| **SWE-bench Pro / Verified** | Vendor public set: opus 89.9, sonnet 81.3 [A4,A3]; sol unknown; Scale V2 has no rows [S1]. Vals SWE-bench: composer-2.5 79.6 (#25/88) [V13]. | unknown |
+| **SWE-bench Pro / Verified** | Vendor public set: opus 89.9, sonnet 81.3 [A4,A3]; sol unknown; Scale V2 has no rows [S1]. Vals SWE-bench: composer-2.5 79.6 (#25/88, Cursor CLI) [V13]. | unknown |
 | **TB4.0 per-category** | Per-task data is on the JS-rendered Harbor Hub leaderboard [T5]. Vals shows a few opus cells only [T3]. | unknown |
 | **Prose (docs, READMEs)** | No benchmark found. | unknown |
 
@@ -291,7 +330,11 @@ max 59.6 here vs 63.1 in Claude Code). Compare *within* this table.
 | xhigh | 56.0 / 59.6 / $8.78 | 51.9 / 57.1 / $6.08 | 51.0 / 54.0 / $1.03 | 41.2 / 29.3 / $0.46 |
 | max | 57.6 / 59.6 / $13.11 | 56.0 / **63.6** / $12.65 | 51.8 / 56.1 / $1.82 | 43.4 / 32.8 / $0.65 |
 
-Mean Intelligence Index cost per task (all ten evals) [C3]:
+deepseek-v4.1-flash was run at max only: Index 45.1, TB4.0 33.8 ±3.4 (binomial σ), $0.88 per TB4
+task at peak rates, half off-peak [C4]. That ties opus and sol at `low` (0.5σ, 0.6σ) and haiku at
+max, and trails sol `medium` by 2.9σ and opus `medium` by 3.8σ.
+
+Mean Intelligence Index cost per task (all ten evals) [C3,C4]:
 
 | Model | low | medium | high | xhigh | max |
 |---|---|---|---|---|---|
@@ -299,6 +342,7 @@ Mean Intelligence Index cost per task (all ten evals) [C3]:
 | sonnet-5.5 | $0.35 | $0.48 | $0.88 | $2.01 | $5.46 |
 | gpt-6.1-sol | $0.13 | $0.21 | $0.32 | $0.39 | $0.72 |
 | haiku-5.5 | $0.02 | $0.05 | $0.08 | $0.12 | $0.21 |
+| deepseek-v4.1-flash | — | — | — | — | $0.26 (peak) |
 
 SciCode (scientific code) [C3]:
 
@@ -367,6 +411,8 @@ Per model:
   Artificial Analysis's own setup shows max slightly above xhigh (TB4.0 56.1 vs 54.0) [C3].
 - **grok-4.7:** measured only at `xhigh` [C1]; Grok Build's levels top out there.
 - **composer-2.5:** exposes no effort setting.
+- **deepseek-v4.1-flash:** measured only at `max` [C4,V14], so it runs at `max`; of its
+  `reasoning_effort` levels only `low`, `high`, and `max` reach the API [H2].
 - Levels above `max`: Codex's `ultra` adds "automatic task delegation", i.e. its own subagents; the
   skill never uses them, since the orchestrator owns delegation.
 
@@ -404,6 +450,10 @@ Cyber safeguards per harness:
 | gpt-6.1-sol | Codex | the GPT-6 Astra stack, OpenAI's strongest to date [O10] | refusal or block |
 | grok-4.7 | Grok Build | production safeguard stack, tested on HackerBench for harmful compliance vs benign refusal [X4] | refusal; rates in the card's figure could not be read reliably |
 | composer-2.5 | Cursor | not documented | unknown |
+| deepseek-v4.1-flash | DeepSeek Harness | none documented [H1] | unknown |
+
+deepseek-v4.1-flash has no refusal data; the V4 Flash 0731 and V4 Pro 0813 builds each refused none
+of their 909 attempts [C1].
 
 Ways to fewer restrictions, neither confirmed for the user's plans:
 - **Anthropic Cyber Verification Program:** "qualifying security professionals who are blocked by
@@ -414,7 +464,8 @@ Ways to fewer restrictions, neither confirmed for the user's plans:
 
 ## Quotas
 
-**Neither vendor publishes absolute subscription limits or per-model multipliers.**
+**Anthropic, OpenAI, and the X Subscription publish no absolute limits or per-model multipliers;
+OpenCode Go does.**
 
 - **Claude Pro.** A 5-hour session limit plus a weekly limit, shared across Claude and Claude Code
   [Q4]. Pro's default model in Claude Code is Opus 5.5 [A10]. No message, token, or hour counts
@@ -435,6 +486,10 @@ Ways to fewer restrictions, neither confirmed for the user's plans:
   not quantified [O9]. An earlier third-party guide gave similar ranges [O5].
 - **X Subscription.** grok-4.7 and composer-2.5 share one pool [U4], whose size nobody has
   measured.
+- **OpenCode Go.** deepseek-v4.1-flash has its own $80 monthly allowance at Go's token prices; a
+  5-hour window may use 20% ($16), a week 50% ($40). Tokens cost double 01:00–04:00 and 06:00–10:00
+  UTC on weekdays [G1,F1]. One hard TB4.0 task at max costs $0.54–0.88 at peak [T3,C4], 0.7–2.2% of
+  a Go week. T3 doesn't show Go's usage on this instance [G8].
 - **Measured plan size** (third-party, full limit priced at API list rates; the two sources
   disagree):
 
@@ -461,8 +516,9 @@ Ways to fewer restrictions, neither confirmed for the user's plans:
 - opus high (56.6) costs 1.9–3.0%; sol max (56.1) costs 2.0–3.7%.
 
 The decisive difference is **who else draws on the pool**. Every Claude child shares Pro with the
-opus-5.5 orchestrator [Q4]; Plus carries only the GPT children. Hence SKILL.md's tie-break: where
-two models fit a role about equally, the non-Claude one.
+opus-5.5 orchestrator [Q4]; Plus carries only the GPT children, and Go only deepseek-v4.1-flash
+[G1]. Hence SKILL.md's tie-break: where two models fit a role about equally, the non-Claude one; and
+the [quota rule](#roles).
 
 ## Re-check when
 
@@ -473,9 +529,15 @@ two models fit a role about equally, the non-Claude one.
 - Vals publishes CyberBench refusal counts or re-runs gpt-6.1-sol's PoC track;
 - Endor Labs adds sonnet-5.5, haiku-5.5, or grok-4.7 rows, or another cross-vendor secure-coding
   benchmark covers these models in their vendor CLIs;
-- Anthropic says whether the Cyber Verification Program covers Claude Code on Pro.
+- Anthropic says whether the Cyber Verification Program covers Claude Code on Pro;
+- Artificial Analysis or Datacurve runs deepseek-v4.1-flash on DeepSWE or SWE-Atlas-QnA, or below
+  `max` [C1,C4]: that decides `medium`-class Features, Explorer, and the middle rung;
+- DeepSeek Harness fixes its Go session-header and 429 handling, or ships a stable release [H3];
+- OpenCode Go changes the model's allowance, peak hours, or served checkpoint [G1,G5];
+- the Migration role is re-weighed on Code Migration v1.1, where sonnet leads sol 86.9 to 77.3
+  (2.9σ) [V15].
 
-## Sources (accessed 2026-10-14 to 2026-10-16)
+## Sources (accessed 2026-10-14 to 2026-10-16; C1, C4, V5, V14, V15, F, G, and H on 2026-10-21)
 
 - [P1] Notebookcheck, "Claude Opus 5.5 is included with Pro" — https://www.notebookcheck.net/Claude-Opus-5-5-is-included-with-Pro-and-Free-still-misses-out.1406452.0.html
 - [P2] Christopher Alarcon, "Claude Opus 5.5 vs Fable 5.1: … which plan gets it" — https://christopheralarcon.com/blog/claude-opus-5-5-vs-fable/
@@ -520,9 +582,10 @@ two models fit a role about equally, the non-Claude one.
 - [U4] Cursor Help, "What is The X Subscription?" — https://cursor.com/help/the-x-subscription/overview ; Engadget, "X bundles Premium, Grok and Cursor under a single monthly subscription" — https://www.engadget.com/2284943/x-subscription-bundles-premium-grok-cursor/
 - [K1] DataCamp, Composer 2.5 — https://www.datacamp.com/blog/composer-2-5
 - [K2] The New Stack, Cursor Composer benchmarks — https://thenewstack.io/cursor-composer-benchmarks/
-- [C1] Artificial Analysis, Coding Agent Index (per-agent data embedded in page) — https://artificialanalysis.ai/agents/coding-agents
+- [C1] Artificial Analysis, Coding Agent Index (per-agent data embedded in page; re-checked 2026-10-21: v1.5, no V4.1 Flash or DeepSeek Harness row, newest DeepSeek row Codex – V4 Flash 0731) — https://artificialanalysis.ai/agents/coding-agents
 - [C2] Artificial Analysis, GPT-6.1 Sol vs Claude Opus 5.5 — https://artificialanalysis.ai/models/comparisons/gpt-6-1-sol-vs-claude-opus-5-5
 - [C3] Artificial Analysis, model release pages with per-effort Intelligence Index data (embedded in page) — https://artificialanalysis.ai/models/releases/claude-opus-5-5 ; https://artificialanalysis.ai/models/releases/claude-sonnet-5-5 ; https://artificialanalysis.ai/models/releases/gpt-6-1-sol ; https://artificialanalysis.ai/models/releases/claude-haiku-5-5
+- [C4] Artificial Analysis, DeepSeek V4.1 Flash 1017 model page (Intelligence Index v4.3.2 data for it, the Sept build, and comparators per effort, embedded in page: Index, TB4.0, SciCode, cost per Index task, output tokens and verbosity rank; listed price $0.30 / $1.20) — https://artificialanalysis.ai/models/deepseek-v4-1-flash-1017
 - [T1] BenchLM, Terminal-Bench 4.0 leaderboard mirror (snapshot 2026-10-12) — https://benchlm.ai/benchmarks/terminal-bench-4
 - [T2] Snorkel AI, Terminal-Bench 4.0 leaderboard — https://snorkel.ai/leaderboard/terminal-bench/
 - [T3] Vals AI, Terminal-Bench 4.0 — https://www.vals.ai/benchmarks/terminal-bench-4
@@ -533,7 +596,7 @@ two models fit a role about equally, the non-Claude one.
 - [V2] Vals AI, Claude Opus 5.5 — https://www.vals.ai/models/anthropic_claude-opus-5-5 ; Claude Opus 5.5 (CVP) — https://www.vals.ai/models/anthropic_claude-opus-5-5-range
 - [V3] Vals AI, Claude Sonnet 5.5 — https://www.vals.ai/models/anthropic_claude-sonnet-5-5
 - [V4] Vals AI, SWE-bench Multimodal — https://www.vals.ai/benchmarks/swebench-multimodal
-- [V5] Vals AI, Vibe Code Bench — https://www.vals.ai/benchmarks/vibe-code
+- [V5] Vals AI, Vibe Code Bench (per-model accuracy, stderr, cost, and harness embedded in page) — https://www.vals.ai/benchmarks/vibe-code
 - [V6] Vals AI, ProgramBench — https://www.vals.ai/benchmarks/programbench
 - [V7] Vals AI, Code Migration — https://www.vals.ai/benchmarks/code-migration
 - [V8] Vals AI, IOI — https://www.vals.ai/benchmarks/ioi
@@ -542,6 +605,8 @@ two models fit a role about equally, the non-Claude one.
 - [V11] Vals AI, Claude Haiku 5.5 — https://www.vals.ai/models/anthropic_claude-haiku-5-5
 - [V12] Vals AI, Grok 4.7 — https://www.vals.ai/models/grok_grok-4.7
 - [V13] Vals AI, Composer 2.5 — https://www.vals.ai/models/cursor_composer-2.5
+- [V14] Vals AI, DeepSeek V4.1 Flash 1017 (max effort, provider DeepSeek) — https://www.vals.ai/models/deepseek_deepseek-v4.1-flash-1017 ; Sept build — https://www.vals.ai/models/deepseek_deepseek-v4.1-flash
+- [V15] Vals AI, Code Migration v1.1 (updated 2026-10-19; per-model standard errors and costs embedded in page) — https://www.vals.ai/benchmarks/code-migration-v1-1
 - [E1] Endor Labs, Agent Security League (AI Coding Agent Security Benchmark; extends SusVibes) — https://www.endorlabs.com/research/ai-code-security-benchmark
 - [B1] BaxBench leaderboard — https://baxbench.com/
 - [B2] CyberGym leaderboard — https://www.cybergym.io/cybergym/
@@ -553,3 +618,15 @@ two models fit a role about equally, the non-Claude one.
 - [D1] Datacurve, DeepSWE leaderboard — https://deepswe.datacurve.ai/
 - [S1] Scale Labs, SWE-Bench Pro V2 — https://labs.scale.com/leaderboard/swe_bench_pro_public_v2
 - [R1] "(When) Should a Software Factory be Lights-off? Benchmarking Code Review Agents on Bug Detection" — https://arxiv.org/html/2610.13668
+- [F1] DeepSeek API docs, Models & Pricing (`deepseek-flash` = DeepSeek-V4.1-Flash-1017; 1M context, 384K max output; off-peak $0.15 / $0.60, cache hit $0.003; peak $0.30 / $1.20, cache hit $0.006; no separate standard rate; peak hours) — https://api-docs.deepseek.com/quick_start/pricing/
+- [F2] DeepSeek API docs, Change Log (2026-10-17 1017 update and vendor benchmarks; 2026-09-10 V4.1 Flash release) — https://api-docs.deepseek.com/updates/
+- [G1] OpenCode docs, Go (models, per-model monthly limits, 5-hour/weekly/monthly shares, token prices, estimated requests, model IDs, `opencode-go/<model-id>`, endpoints, privacy; "Where can I use it": `x-opencode-session`, DeepSeek Harness listed with incomplete session support) — https://opencode.ai/docs/go/
+- [G2] OpenCode, Go landing page (prices, FAQ: free tier 200 requests/day) — https://opencode.ai/go
+- [G3] OpenCode on X, "DeepSeek V4.1 Flash updated to 1017 in OpenCode Go and Free" (2026-10-19; read via api.fxtwitter.com) — https://x.com/opencode/status/2112220734768779441
+- [G5] anomalyco/opencode issue #41969, "Publish exact model versions/checkpoints for Go plan models" (open), with duplicates #56362 and #56690 — https://github.com/anomalyco/opencode/issues/41969
+- [G7] anomalyco/opencode user reports on the Go DeepSeek route: #57613 (429), #56721 (500), #57403 (long TTFT) — https://github.com/anomalyco/opencode/issues/57613 ; https://github.com/anomalyco/opencode/issues/56721 ; https://github.com/anomalyco/opencode/issues/57403
+- [G8] T3 Code, OpenCode provider docs (applies only to T3's `opencode` driver) — https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-opencode.md ; driver kind `opencode` (packages/provider-opencode/src/client.ts), Go usage windows (packages/provider-opencode/src/server/usageLimits.ts), effort as `variant` (packages/provider-opencode/src/server/adapter.ts)
+- [G9] T3 Code at `163bdeaa11` (2026-10-21): ACP provider docs, "Add a local command: For DeepSeek Harness, use `dsh` with arguments `--profile` and `acp`", permissions, models and options — https://github.com/pingdotgg/t3code/blob/main/docs/user/providers-acp.md ; orchestration docs, "ACP Registry V2" and "Provider Support" — docs/orchestration-v2/orchestrator-mcp-server.md ; instance id `acpRegistry_deepseek_harness` from a local command (apps/web/src/components/settings/AddProviderInstanceDialog.environment.browser.test.tsx) ; grouped model id `["opencode-go","deepseek-v4.1-flash"]` (apps/server/src/provider/AcpRegistryProbe.test.ts) ; option application, unadvertised values skipped (packages/provider-acp/src/server/adapter.ts)
+- [H1] DeepSeek Harness at `687f282e86` (0.2.1-rc.2, 2026-10-17) — https://github.com/deepseek-ai/deepseek-harness : README and SAFETY.md; docs/cli-help.md (`dsh acp`); docs/user/guide/providers.md (custom providers, reasoning effort, `off` caveat, image input); packages/acp/acp/README.md and src/model-control.ts (ACP surface, `reasoning_effort`, JSON `[provider, model]` ids); packages/bundle/acp-app (profile, default route); packages/bundle/base/cordis.patch.yml (tools, sandbox, approval, `DSH_PERMISSION_MODE`, web search key); packages/sandbox/sandbox-policy/README.md; packages/fs/tool-fs/README.md (`read_image`); packages/llm/llm-pi-ai (provider-data.generated.ts: `opencode-go` key `OPENCODE_API_KEY`; models.ts: offered levels; stream.ts: error classification); packages/llm/llm/src/error.ts (quota wording) ; npm `@deepseek-ai/dsh` 0.2.1-rc.2 (MIT) — https://www.npmjs.com/package/@deepseek-ai/dsh
+- [H2] pi-ai model catalog, `opencode-go` entry for `deepseek-v4.1-flash` (dist/providers/data/opencode-go.json: endpoint, `thinkingLevelMap`, input, cost, compat, limits) in `@earendil-works/pi-ai` 1.1.0 (the version dsh's lockfile pins) and 1.3.0 — https://www.npmjs.com/package/@earendil-works/pi-ai ; https://github.com/earendil-works/pi
+- [H3] DeepSeek Harness discussions (open): #5495 and #10190 (`x-opencode-session`, MissingSessionID, pinned `api:`), #9972 (auto-review on Go routes), #7926 and #8992 (`Retry-After` dropped, local backoff), #9636 (401/403 before 429), #3338 (quota wording terminal), #9966 (`acp` profile stdout log line, T3 on Windows), #4276 (permission requests carry only a tool-call id) — https://github.com/deepseek-ai/deepseek-harness/discussions/5495 (others at the same path by number)
