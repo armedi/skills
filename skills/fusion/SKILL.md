@@ -44,6 +44,7 @@ tree still matches the baseline.
 
    Done when the gate commands are known, the baseline is recorded with the gates that were already
    red, and every explorer has answered with its cited lines spot-checked.
+
 2. **Design.** Write the plan and the task split yourself, and make every judgment call: UX intent,
    API shape, trade-offs. For a bug, hunt the root cause yourself when it is one short chain of
    reasoning. Then route each task:
@@ -54,6 +55,7 @@ tree still matches the baseline.
 
    Done when every task has an agent type, a model, and an effort level with a one-line reason, in the
    order you will dispatch them.
+
 3. **Brief.** Write each task's spec or design brief by **Briefs**. If you save a brief to a file,
    put it in the OS temp directory.
 
@@ -66,8 +68,10 @@ tree still matches the baseline.
    missed call sites, missing constraints or gates). Revise the briefs.
 
    Done when every brief carries every field that applies and every critique finding is judged.
+
 4. **Dispatch** the next task in plan order with `delegate_task`, the target from **Models**. If a
    child is stuck or working outside its brief, stop it with `task_cancel`.
+
 5. **Review.** Take a new snapshot and judge the change against the baseline:
    - Read the full `git diff <baseline snapshot> <new snapshot>`, skimming
      generated output.
@@ -77,12 +81,13 @@ tree still matches the baseline.
    - Judge each objection or stop report; a valid one changes the plan before rework.
 
    Done when every check above has passed or its defect is sent to step 7.
-6. **Cross-review** the task's first diff that passes step 5, unless it comes from a mechanical spec
-   (rename, formatting, a one-line edit) whose gates fully cover it: send the **Reviewer** a new
-   read-only `delegate_task` with the original brief and both snapshot ids: review
-   `git diff <baseline snapshot> <new snapshot>` against the brief and list only high-value
-   concerns: bugs, missing tests, scope creep. Valid findings go to step 7. Done
-   when every finding is judged.
+
+6. **Cross-review** only for high-risk changes or unresolved correctness concerns. Send the
+   **Reviewer** a new read-only `delegate_task` with the original brief and both snapshot ids. Ask
+   it to review `git diff <baseline snapshot> <new snapshot>` against the brief and report only
+   actionable, high-value findings. Valid findings go to step 7. Done when skipped or every finding
+   is judged.
+
 7. **Rework.** Every fix carries its evidence: the failing gate output, the review findings, the
    `file:line`s.
    - **Same child first.** Send the fix to the child's `childThreadId` with `t3_thread_send`,
@@ -192,7 +197,7 @@ For every agent type but the Executor, pick the **lowest** level whose row match
 
 ## Models
 
-Dispatch only these six; another model only when the user names it.
+Dispatch only these five; another model only when the user names it.
 
 | Short name | `providerInstanceId` | Provider |
 |---|---|---|
@@ -200,7 +205,6 @@ Dispatch only these six; another model only when the user names it.
 | sonnet-5.5 | `claudeAgent` | Anthropic |
 | gpt-6.1-sol | `codex` | OpenAI |
 | grok-4.7 | `grok` | SpaceXAI |
-| cursor-auto | `cursor` | SpaceXAI |
 | deepseek-v4.1-flash | `acpRegistry_deepseek_harness` | Command Code |
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises.
