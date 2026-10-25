@@ -97,7 +97,7 @@ tree still matches the baseline.
    - **Up the escalation ladder** when two follow-ups haven't fixed it (a follow-up correcting your
      own spec doesn't count), or the approach is wrong: a new `delegate_task` with the original
      brief plus a **delta**: what failed, its evidence, and any change to the brief. The ladder is
-     `deepseek-v4.1-flash → grok-4.7 → gpt-6.1-sol / opus-5.5`, effort re-chosen by
+     `deepseek-v4.1-flash / sonnet-5.5 / grok-4.7 → gpt-6.1-sol → opus-5.5`, effort re-chosen by
      **Effort**. The Executor starts on the bottom rung. A specialist
      starts on the top rung, where each step up switches to the other provider, one effort level
      higher. When the evidence doesn't show the cause, first send the **Investigator** the brief,
