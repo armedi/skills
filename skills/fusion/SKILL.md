@@ -73,6 +73,7 @@ tree still matches the baseline.
    child is stuck or working outside its brief, stop it with `task_cancel`.
 
 5. **Review.** Take a new snapshot and judge the change against the baseline:
+   - The child committed exactly its changes.
    - Read the full `git diff <baseline snapshot> <new snapshot>`, skimming
      generated output.
    - Against the brief: everything asked was done, nothing unasked was added.
@@ -101,15 +102,15 @@ tree still matches the baseline.
      starts on the top rung, where each step up switches to the other provider, one effort level
      higher. When the evidence doesn't show the cause, first send the **Investigator** the brief,
      the diff, and the failing gate output, and put its diagnosis in the delta.
-   - A wrong approach starts from the baseline: if the tree holds only this task's changes,
-     `git stash push -u -m "failed: <model>"`; otherwise ask the user. Ask, too, when the fix needs
-     scope beyond the brief.
+   - A wrong approach starts from the baseline: if everything since baseline HEAD is this task's,
+     `git stash push -u -m "failed: <model>"`, `git branch failed/<model>`, and
+     `git reset --hard <baseline HEAD>`; otherwise ask the user. Ask, too, when the fix needs scope
+     beyond the brief.
 
    Each round goes back through step 5. Done when the task's gates are as green as the baseline and
    every finding is judged, or the task is a **blocker**: it has failed on both top-rung models at
-   their **Effort caps**. On a blocker, go to step 8. Otherwise, the orchestrator commits task
-   changes; record decisions, rationale, and validation in the commit body. Update
-   baseline HEAD and snapshot; continue at step 4, or finally step 8.
+   their **Effort caps**. On a blocker, go to step 8. Otherwise, update baseline HEAD and snapshot;
+   continue at step 4, or finally step 8.
 8. **Hand off.** Summarize what changed, validation against the initial baseline, unresolved blockers
    or risks, and any cleanup or next action the user needs to take.
 
@@ -124,7 +125,7 @@ Every spec and design brief carries:
 - exact paths, and what must stay untouched;
 - load-bearing rules from `AGENTS.md`/`CLAUDE.md`;
 - gate commands to run, verbatim;
-- leave committing to the orchestrator;
+- commit your changes before reporting;
 - the report: changes, files touched, each gate with pass/fail, assumptions, and remaining work
   or uncertainty.
 
