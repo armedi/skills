@@ -178,7 +178,7 @@ None of the models take video or audio: ask the user for frames or a transcript.
 | **Plan critic** | plan critique (step 3) | second opinion |
 | **Reviewer** | cross-review (step 6) | second opinion |
 
-A **second opinion** comes from the first of `opus-5.5, gpt-6.1-sol, grok-4.7` whose provider
+A **second opinion** comes from the first of `grok-4.7, gpt-6.1-sol, opus-5.5` whose provider
 differs from yours and from the implementer's (in step 3, the one step 2 routed the task to).
 
 ## Effort
