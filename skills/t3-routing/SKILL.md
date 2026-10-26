@@ -1,6 +1,6 @@
 ---
 name: t3-routing
-description: "Routing for coding work dispatched to another model in T3 Code: agent type, model, and effort. Use before delegating a task, launching a thread for one, or picking a reviewer."
+description: "Routing for coding work in T3 Code: agent type, model, and effort. Use before handing a task to a subagent or a new thread."
 ---
 
 ## Agent types
