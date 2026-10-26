@@ -94,13 +94,12 @@ tree still matches the baseline.
    - **Same child first.** Send the fix to the child's `childThreadId` with `t3_thread_send`,
      `mode: "queue"`. A wrong spec or brief goes the same way, with what changed. If a stop report
      shows the task fails the spec test, route it again in step 2.
-   - **Up the escalation ladder** when two follow-ups haven't fixed it (a follow-up correcting your
-     own spec doesn't count), or the approach is wrong: a new `delegate_task` with the original
-     brief plus a **delta**: what failed, its evidence, and any change to the brief. The ladder is
-     `deepseek-v4.1-flash / sonnet-5.5 / grok-4.7 → gpt-6.1-sol → opus-5.5`, effort re-chosen by
-     **Effort**. The Executor starts on the bottom rung. A specialist
-     starts on the top rung, where each step up switches to the other provider, one effort level
-     higher. When the evidence doesn't show the cause, first send the **Investigator** the brief,
+   - **Escalate** when two follow-ups haven't fixed it (a follow-up correcting your own spec
+     doesn't count), or the approach is wrong: a new `delegate_task` with the original brief plus
+     a **delta**: what failed, its evidence, and any change to the brief. Pick the model and effort
+     from **Models** with the next higher Intelligence Index than every run that failed the task,
+     within the **Effort caps**; on a tie, prefer a model that hasn't failed it. When the evidence
+     doesn't show the cause, first send the **Investigator** the brief,
      the diff, and the failing gate output, and put its diagnosis in the delta.
    - A wrong approach starts from the baseline: if everything since baseline HEAD is this task's,
      `git stash push -u -m "failed: <model>"`, `git branch failed/<model>`, and
@@ -108,9 +107,9 @@ tree still matches the baseline.
      beyond the brief.
 
    Each round goes back through step 5. Done when the task's gates are as green as the baseline and
-   every finding is judged, or the task is a **blocker**: it has failed on both top-rung models at
-   their **Effort caps**. On a blocker, go to step 8. Otherwise, update baseline HEAD and snapshot;
-   continue at step 4, or finally step 8.
+   every finding is judged, or the task is a **blocker**: no model and effort within the **Effort
+   caps** scores higher than one that failed it. On a blocker, go to step 8. Otherwise, update
+   baseline HEAD and snapshot; continue at step 4, or finally step 8.
 8. **Hand off.** Summarize what changed, validation against the initial baseline, unresolved blockers
    or risks, and any cleanup or next action the user needs to take.
 
@@ -178,8 +177,9 @@ None of the models take video or audio: ask the user for frames or a transcript.
 | **Plan critic** | plan critique (step 3) | second opinion |
 | **Reviewer** | cross-review (step 6) | second opinion |
 
-A **second opinion** comes from the first of `grok-4.7, gpt-6.1-sol, opus-5.5` whose provider
-differs from yours and from the implementer's (in step 3, the one step 2 routed the task to).
+A **second opinion** comes from a model whose maker differs from yours and from the
+implementer's (in step 3, the one step 2 routed the task to). Of those, take the one with an
+Intelligence Index entry closest to the implementer's model at its effort; on a tie, the higher.
 
 ## Effort
 
@@ -189,7 +189,7 @@ For every agent type but the Executor, pick the **lowest** level whose row match
 |---|---|
 | `medium` (default) | A design brief with a clear scope: the outcome and constraints are settled, the code is not. |
 | `high` | The implementer must find something out or design something: unknown root cause, invariants across many files, concurrency, security, money, or migration correctness. |
-| `xhigh` / `max` | Only when the agent type names it or through the escalation ladder. |
+| `xhigh` / `max` | Only when the agent type names it or through escalation (step 7). |
 
 - An agent type that names an effort sets the default; drop a level when the task is clearly simpler.
 - **Shrink the task before raising effort**: split it, and spec the parts that pass the spec test.
@@ -198,15 +198,16 @@ For every agent type but the Executor, pick the **lowest** level whose row match
 
 ## Models
 
-Dispatch only these five; another model only when the user names it.
+Dispatch only these six; another model only when the user names it.
 
-| Short name | `providerInstanceId` | Provider |
-|---|---|---|
-| opus-5.5 | `claudeAgent` | Anthropic |
-| sonnet-5.5 | `claudeAgent` | Anthropic |
-| gpt-6.1-sol | `codex` | OpenAI |
-| grok-4.7 | `grok` | SpaceXAI |
-| deepseek-v4.1-flash | `acpRegistry_deepseek_harness` | Command Code |
+| Short name | Intelligence Index | `providerInstanceId` | Provider |
+|---|---|---|---|
+| opus-5.5 | medium: 51, high: 54, xhigh: 56, max: 58 | `claudeAgent` | Anthropic |
+| sonnet-5.5 | medium: 41, high: 47, xhigh: 52, max: 56 | `claudeAgent` | Anthropic |
+| gpt-6.1-sol | medium: 48, high: 50, xhigh: 51, max: 52 | `codex` | OpenAI |
+| gpt-6.1-terra | medium: 41, high: 44, xhigh: 45, max: 48 | `codex` | OpenAI |
+| grok-4.7 | high: 46, xhigh: 46 | `grok` | SpaceXAI |
+| deepseek-v4.1-flash | max: 45 | `acpRegistry_deepseek_harness` | Command Code |
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises.
   When a model lacks the chosen effort, use the next level up it supports, or its highest within
