@@ -30,8 +30,6 @@ evidence.
 | **Science** | scientific and numerical code | opus-5.5 |
 | **General** | a feature, refactor, or migration no other row names | deepseek-v4.1-flash |
 
-None of the models take video or audio: ask the user for frames or a transcript.
-
 ### Read-only
 
 | Agent type | Takes | Model |
