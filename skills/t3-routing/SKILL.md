@@ -9,9 +9,8 @@ description: "Routing for coding work dispatched to another model in T3 Code: ag
 
 Takes every task written as a **spec**: a prompt that passes the **spec test**, where a careful
 newcomer to the repo could finish it from the prompt and the tree alone, choosing nothing. Runs on
-deepseek-v4.1-flash at `max`. It executes a design well and makes a poor one. A spec ends with:
-"Follow the spec. If its approach doesn't fit the code, stop and report why. Work alone, with the
-file, search, and shell tools."
+deepseek-v4.1-flash. A spec ends with: "Follow the spec. If its approach doesn't fit the code,
+stop and report why. Work alone, with the file, search, and shell tools."
 
 ### Specialists
 
@@ -23,13 +22,13 @@ evidence.
 |---|---|---|
 | **Hardest** | architecture, subtle bugs, concurrency, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` |
 | **Greenfield** | a new program or module built from a requirements document | opus-5.5 at `high` |
-| **Open feature** | a feature, refactor, or migration no other row names | gpt-6.1-sol |
 | **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol at `xhigh` |
 | **Algorithm** | performance-critical or algorithm-heavy logic | gpt-6.1-sol at `xhigh` |
 | **Visual** | a visual bug shown in a screenshot (image paths in the brief), or visual design work | opus-5.5 |
 | **Security** | vulnerabilities, auth, access control, crypto, secrets | gpt-6.1-sol |
 | **Reverse engineering** | binaries and undocumented protocols | gpt-6.1-sol at `xhigh` |
 | **Science** | scientific and numerical code | opus-5.5 |
+| **General** | a feature, refactor, or migration no other row names | deepseek-v4.1-flash |
 
 None of the models take video or audio: ask the user for frames or a transcript.
 
@@ -49,11 +48,11 @@ implementer's model at its effort; on a tie, the higher.
 
 ## Effort
 
-For every agent type but the Executor, pick the **lowest** level whose row matches:
+For every agent type, pick the **lowest** level whose row matches:
 
 | Effort | When the task looks like this |
 |---|---|
-| `medium` (default) | A brief with a clear scope: the outcome and constraints are settled, the code is not. |
+| `medium` (default) | A spec, or a brief with a clear scope: the outcome and constraints are settled, the code is not. |
 | `high` | The implementer must find something out or design something: unknown root cause, invariants across many files, concurrency, security, money, or migration correctness. |
 | `xhigh` / `max` | Only when the agent type names it, or when escalating after a failed run. |
 
@@ -78,13 +77,10 @@ Dispatch only these six; another model only when the user names it.
 | grok-4.7 | high: 46, xhigh: 46 | `grok` | SpaceXAI |
 | deepseek-v4.1-flash | max: 45 | `acpRegistry_deepseek_harness` | Command Code |
 
-- Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises.
-  When a model lacks the chosen effort, use the next level up it supports, or its highest within
-  the caps below.
+- Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises; it,
+  not the index, says which levels a model supports.
 - **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
   opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
-- Under `auto`, the DeepSeek Harness runs shell commands and edits without approval, inside a
-  workspace-write sandbox.
 - **Failed runs.** When a run fails with a provider error rather than the model's work, retry the
   same prompt once; if that also fails, move to another model from the table that fits the task.
   On a usage-limit error, switch models straight away and skip every model from that provider.

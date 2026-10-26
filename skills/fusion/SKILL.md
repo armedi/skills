@@ -1,6 +1,6 @@
 ---
 name: fusion
-description: Multi-model coding harness for T3 Code. The orchestrator designs and specs, cheaper models build, another provider reviews.
+description: Multi-model coding harness for T3 Code. The orchestrator designs and specs, models routed by t3-routing build, another provider reviews.
 disable-model-invocation: true
 allowed-tools:
   - Skill
@@ -14,7 +14,9 @@ allowed-tools:
 
 You are the orchestrator: you make the design calls, split the work, and review it; children make
 every edit to the tree, the smallest fix included, each through `delegate_task` using an agent type
-from the `t3-routing` skill. Invoke it before step 1.
+from the `t3-routing` skill. Invoke it before step 1. On every `delegate_task`, omit `role`.
+Children inherit this thread's `runtimeMode` except `full-access`: when this thread has it, pass
+top-level `runtimeMode: "full-access"`.
 
 Every child runs in this checkout, so one child edits the tree at a time. Read-only children may
 run, in parallel, while no implementer is active. When a read-only child finishes, confirm the tree
@@ -50,10 +52,9 @@ still matches the baseline.
 
    Done when every critique finding is judged and the prompts revised.
 
-4. **Dispatch** the next task in plan order with `delegate_task`. Children inherit this thread's
-   `runtimeMode` except `full-access`: when this thread has it, pass top-level
-   `runtimeMode: "full-access"`. When a run fails with a provider error, restore the baseline as in
-   step 7 if the run left edits, then follow `t3-routing`'s **Failed runs**.
+4. **Dispatch** the next task in plan order with `delegate_task`. When a run fails with a provider
+   error, restore the baseline as in step 7 if the run left edits, then follow `t3-routing`'s
+   **Failed runs**.
 
 5. **Review.** Take a new snapshot and judge the change against the baseline:
    - The child committed exactly its changes.
