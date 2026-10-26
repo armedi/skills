@@ -21,8 +21,8 @@ evidence.
 | Agent type | Takes | Model |
 |---|---|---|
 | **Hardest** | architecture, subtle bugs, concurrency, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` |
-| **Greenfield** | a new program or module built from a requirements document | opus-5.5 at `high` |
-| **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol at `xhigh` |
+| **Greenfield** | a new program or module built from a requirements document | opus-5.5 |
+| **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol |
 | **Algorithm** | performance-critical or algorithm-heavy logic | gpt-6.1-sol at `xhigh` |
 | **Visual** | a visual bug shown in a screenshot (image paths in the brief), or visual design work | opus-5.5 |
 | **Security** | vulnerabilities, auth, access control, crypto, secrets | gpt-6.1-sol |
@@ -46,24 +46,6 @@ A **second opinion** comes from a model whose maker differs from yours and from 
 implementer's. Of those, take the one with an Intelligence Index entry closest to the
 implementer's model at its effort; on a tie, the higher.
 
-## Effort
-
-For every agent type, pick the **lowest** level whose row matches:
-
-| Effort | When the task looks like this |
-|---|---|
-| `medium` (default) | A spec, or a brief with a clear scope: the outcome and constraints are settled, the code is not. |
-| `high` | The implementer must find something out or design something: unknown root cause, invariants across many files, concurrency, security, money, or migration correctness. |
-| `xhigh` / `max` | Only when the agent type names it, or when escalating after a failed run. |
-
-- An agent type that names an effort sets the default; drop a level when the task is clearly simpler.
-- **Shrink the task before raising effort**: split it, and spec the parts that pass the spec test.
-- **Read-only agent types** take the effort of the task they serve, not its implementer's: `medium`
-  for explorers and for checking a spec, `high` for a `high`-class task.
-- **Escalating** after a failed run: pick the model and effort with the next higher Intelligence
-  Index than every run that failed the task, within the **Effort caps**; on a tie, prefer a model
-  that hasn't failed it.
-
 ## Models
 
 Dispatch only these six; another model only when the user names it.
@@ -79,8 +61,19 @@ Dispatch only these six; another model only when the user names it.
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises; it,
   not the index, says which levels a model supports.
-- **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
-  opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
 - **Failed runs.** When a run fails with a provider error rather than the model's work, retry the
   same prompt once; if that also fails, move to another model from the table that fits the task.
   On a usage-limit error, switch models straight away and skip every model from that provider.
+
+## Effort
+
+Pick the **lowest** effort that can do the task. Use `xhigh` or `max` only when the agent type
+names it, or when escalating after a failed run.
+
+- **Shrink the task before raising effort**: split it, and spec the parts that pass the spec test.
+- **Read-only agent types** take the effort of the task they serve, not its implementer's.
+- **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
+  opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
+- **Escalating** after a failed run: pick the model and effort with the next higher Intelligence
+  Index than every run that failed the task, within the **Effort caps**; on a tie, prefer a model
+  that hasn't failed it.
