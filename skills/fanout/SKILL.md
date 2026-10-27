@@ -18,7 +18,7 @@ Launch one new thread per work item, each on its own worktree. The user says whi
 run with fusion; an item they don't mark runs without.
 
 - **With fusion:** `modelSelection` is `{"provider": "claudeAgent", "model": "claude-opus-5-5",
-  "options": [{"id": "effort", "value": "high"}]}`, and the message is `/fusion <item>`, with the
-  item made self-contained.
+  "options": [{"id": "effort", "value": "high"}]}`, and the message is `/fusion ` followed by the
+  item, made self-contained.
 - **Without fusion:** route the item with the `t3-routing` skill; the message is the spec or brief
   its agent type takes.
