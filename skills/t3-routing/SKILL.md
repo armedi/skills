@@ -59,6 +59,8 @@ Dispatch only these six; another model only when the user names it.
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises; it,
   not the index, says which levels a model supports.
+- **Concurrency.** Run at most 3 implementers at once; deepseek-v4.1-flash runs don't count
+  toward it.
 - **Failed runs.** When a run fails with a provider error rather than the model's work, retry the
   same prompt once; if that also fails, move to another model from the table that fits the task.
   On a usage-limit error, switch models straight away and skip every model from that provider.
