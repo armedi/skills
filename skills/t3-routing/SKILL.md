@@ -22,6 +22,7 @@ evidence.
 |---|---|---|
 | **Hardest** | architecture, subtle bugs, concurrency, money, data migrations, public APIs, build/CI or tooling failures of unknown cause | opus-5.5 at `high` |
 | **Greenfield** | a new program or module built from a requirements document | opus-5.5 |
+| **Port** | rewriting code in another language | gpt-6.1-sol; sonnet-5.5 into Python |
 | **Terminal** | build/CI fixes of known cause, shell scripts, environment and tooling work | gpt-6.1-sol |
 | **Algorithm** | performance-critical or algorithm-heavy logic | gpt-6.1-sol at `xhigh` |
 | **Visual** | a visual bug shown in a screenshot (image paths in the brief), or visual design work | opus-5.5 |
@@ -36,6 +37,7 @@ evidence.
 |---|---|---|
 | **Lookup** | questions whose answer is used as-is: find X, list call sites | deepseek-v4.1-flash |
 | **Explorer** | how something works, or any answer that shapes a plan | gpt-6.1-sol |
+| **Computer use** | reproducing or verifying behaviour by driving a browser or desktop GUI | gpt-6.1-terra |
 | **Investigator** | diagnosing a failure the evidence doesn't explain | second opinion |
 | **Plan critic** | checking a plan and its prompts against the code before dispatch | second opinion |
 | **Reviewer** | reviewing a finished change against its prompt | second opinion |
@@ -50,12 +52,12 @@ Dispatch only these six; another model only when the user names it.
 
 | Short name | Intelligence Index | `providerInstanceId` | Provider |
 |---|---|---|---|
-| opus-5.5 | medium: 51, high: 54, xhigh: 56, max: 58 | `claudeAgent` | Anthropic |
-| sonnet-5.5 | medium: 41, high: 47, xhigh: 52, max: 56 | `claudeAgent` | Anthropic |
-| gpt-6.1-sol | medium: 48, high: 50, xhigh: 51, max: 52 | `codex` | OpenAI |
-| gpt-6.1-terra | medium: 41, high: 44, xhigh: 45, max: 48 | `codex` | OpenAI |
-| grok-4.7 | high: 46, xhigh: 46 | `grok` | SpaceXAI |
-| deepseek-v4.1-flash | max: 45 | `acpRegistry_deepseek_harness` | Command Code |
+| opus-5.5 | medium: 48, high: 52, xhigh: 57, max: 58 | `claudeAgent` | Anthropic |
+| sonnet-5.5 | medium: 30, high: 41, xhigh: 50, max: 54 | `claudeAgent` | Anthropic |
+| gpt-6.1-sol | medium: 46, high: 50, xhigh: 52, max: 55 | `codex` | OpenAI |
+| gpt-6.1-terra | medium: 38, high: 42, xhigh: 45, max: 51 | `codex` | OpenAI |
+| grok-4.7 | high: 35, xhigh: 34 | `grok` | SpaceXAI |
+| deepseek-v4.1-flash | max: 32 | `acpRegistry_deepseek_harness` | Command Code |
 
 - Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises; it,
   not the index, says which levels a model supports.
@@ -71,8 +73,9 @@ names it, or when escalating after a failed run.
 
 - **Shrink the task before raising effort**: split it, and spec the parts that pass the spec test.
 - **Read-only agent types** take the effort of the task they serve, not its implementer's.
-- **Effort caps.** gpt-6.1-sol at `xhigh`: `max` nearly doubles the cost for about one point.
-  opus-5.5 and sonnet-5.5 at `max`: each level up still buys real gains.
+- **Effort caps.** gpt-6.1-sol and opus-5.5 at `xhigh`: `max` costs about 1.7× for one or two
+  points. grok-4.7 at `high`: `xhigh` scores no higher. sonnet-5.5 and gpt-6.1-terra at `max`:
+  each level up still buys real gains.
 - **Escalating** after a failed run: pick the model and effort with the next higher Intelligence
   Index than every run that failed the task, within the **Effort caps**; on a tie, prefer a model
   that hasn't failed it.
