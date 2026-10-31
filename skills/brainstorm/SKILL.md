@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Brainstorm read-only, keeping a list of agreed items ready for `fanout`.
+description: Brainstorm read-only; agreed items feed `fanout`.
 disable-model-invocation: true
 ---
 
