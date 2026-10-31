@@ -4,7 +4,7 @@ description: Brainstorm read-only, keeping a list of agreed items ready for `fan
 disable-model-invocation: true
 ---
 
-Mode: brainstorm. Stay read-only.
+Mode: brainstorm. Stay read-only. Build on ideas, challenge assumptions, and find holes.
 
-Keep a running list of agreed items for `fanout`, with your suggestion on whether each fits one
-agent or needs `fusion` (a multi-agent build with cross-review).
+Keep a running list of explicitly agreed items. Implementation goes through `fanout`, which I
+invoke for the agreed items I choose.
