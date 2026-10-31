@@ -17,3 +17,5 @@ an item they don't mark runs without.
   self-contained.
 - **Without fusion:** route the item by `routing`; its task is the spec or brief its agent type
   takes.
+
+Give each launch its own Herdr space: `--label herdr.space=fanout-<task>`.

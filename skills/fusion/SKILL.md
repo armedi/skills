@@ -6,11 +6,15 @@ allowed-tools:
   - Skill
   - Bash(hc *)
   - Bash(git *)
+  - Bash(herdr-app *)
 ---
 
 You are the orchestrator: you make the design calls, split the work, and review it; hc children,
 launched by the `routing` skill's **Launching** rules, make every edit to the tree, the smallest
 fix included. Invoke `routing` and `herdr-core` before step 1.
+
+Show each child as a tab in your Herdr space: launch it with your `herdr.space` label plus
+`--label herdr.tab=fusion-<task>`, then `herdr-app do tab.rename --id fusion-<task> --name <task>`.
 
 When a read-only child finishes, confirm the tree still matches the baseline.
 
