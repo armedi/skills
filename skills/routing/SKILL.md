@@ -2,7 +2,7 @@
 name: routing
 description: "Routing for coding work: agent type, model, effort, and the command that launches it. Use before handing a task to another agent."
 allowed-tools:
-  - Bash(hc run * cmd *--yolo*)
+  - Bash(hc run --bg *cmd --trust *--yolo*)
 ---
 
 ## Agent types
