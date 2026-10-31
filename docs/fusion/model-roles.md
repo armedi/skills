@@ -1,8 +1,8 @@
 # Model evidence (compiled 2026-10-15; rebuilt 2026-10-29 on Intelligence Index v5.0, with gpt-6.1-terra)
 
 Per-model evidence behind the **Models** and **Effort** sections of
-[t3-routing](../../skills/t3-routing/SKILL.md). Why each agent type gets its model is in
-[agent-types.md](../t3-routing/agent-types.md), which cites this file for its numbers.
+[routing](../../skills/routing/SKILL.md). Why each agent type gets its model is in
+[agent-types.md](../routing/agent-types.md), which cites this file for its numbers.
 
 - [Subscriptions and harnesses](#subscriptions-and-harnesses): what the user can run, and where.
 - [The six models](#the-six-models): price, speed, and headline scores.
@@ -27,36 +27,24 @@ Conventions:
 
 ## Subscriptions and harnesses
 
-Each model runs in its maker's harness. Checked against the local CLIs on 2026-10-14 and the dsh
-profile on 2026-10-29.
+Each model runs in its maker's harness, launched as an hc child. Checked against the local CLIs on
+2026-10-14 and 2026-10-31.
 
-- **Claude Pro → Claude Code** (T3 `claudeAgent`): opus-5.5, sonnet-5.5. Opus 5.5 is on Pro since
+- **Claude Pro → Claude Code** (`claude`): opus-5.5, sonnet-5.5. Opus 5.5 is on Pro since
   2026-09-22 [P1]. Claude Code and chat share one quota: a rolling 5-hour window plus weekly caps
   [Q4].
-- **ChatGPT Plus → Codex** (T3 `codex`): gpt-6.1-sol and gpt-6.1-terra, both in Codex and Work on
+- **ChatGPT Plus → Codex** (`codex`): gpt-6.1-sol and gpt-6.1-terra, both in Codex and Work on
   Plus [O2,O9]. A 5-hour window and weekly caps, shared with ChatGPT Work [O4,O9].
-- **X Subscription → Grok Build** (T3 `grok`): grok-4.7, at `low`, `high`, or `xhigh` [C3]. Its pool
+- **X Subscription → Grok Build** (`grok`): grok-4.7, at `low`, `high`, or `xhigh` [C3]. Its pool
   is shared with Cursor's models [U4]. grok-4.7-build-fast is the same model at 2× speed and price
-  [X1], hidden in T3.
-- **DeepSeek Harness** (T3 `acpRegistry_deepseek_harness`): deepseek-v4.1-flash. T3 runs dsh
-  0.2.1-rc.3, a developer preview, as `dsh --profile acp` [G9,H1].
-  - **Provider:** Command Code GOAT, through its Provider API [M1,M3,M4]. The profile's default is
-    `reasoning: high`; the effort option passes `off`, `low`, `high`, or `max` through [L1].
-  - **Web search is off.** The profile disables both DeepSeek search backends. `web_search` is
-    still offered, so each call fails with "unavailable provider"; `web_fetch` (local HTTP) works
-    [L1,H4]. To enable it, put `DEEPSEEK_API_KEY` in `~/.dsh/.credentials.yaml`. In the profile,
-    enable `web-deepseek-api` with `sendOriginalQuestion: false` and keep `web-search-deepseek`
-    disabled. Set `web` to `searchProvider: deepseek-search-api`, then restart the provider [H4].
-  - **Search cost and risks:** it works on any chat route and costs $0.75 per 1,000 searches [F3].
-    Queries go to DeepSeek, which stores data in the PRC [F4], and `web_fetch` can reach
-    private-network hosts [H4].
-  - **Known defects:** dsh drops `Retry-After` on a 429, and a stdout log line can corrupt the ACP
-    stream [H3].
+  [X1].
+- **Command Code CLI** (`cmd`): deepseek-v4.1-flash, as `deepseek/deepseek-v4.1-flash` on Command
+  Code's own provider. Replaces the DeepSeek Harness (dsh), which T3 ran over ACP [G9,H1]; dsh has
+  no interactive terminal profile for hc to run.
 
 Not used:
 - gpt-6-astra: AA 61 [O6], but 5× sol's Codex credits per token [O9]; the user excluded it.
-- haiku-5.5 and composer-2.5 are dropped from dispatch. In T3, the `cursor` instance offers only
-  Auto.
+- haiku-5.5 and composer-2.5 are dropped from dispatch.
 - Fable 5.1 is not in Pro's limits [P2].
 - gpt-6-sol, gpt-6-luna, grok-4.6 and grok-4.5 lose to their successors at the same price [T1].
 

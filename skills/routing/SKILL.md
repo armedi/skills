@@ -1,6 +1,6 @@
 ---
-name: t3-routing
-description: "Routing for coding work in T3 Code: agent type, model, and effort. Use before handing a task to a subagent or a new thread."
+name: routing
+description: "Routing for coding work: agent type, model, effort, and the command that launches it. Use before handing a task to another agent."
 ---
 
 ## Agent types
@@ -10,7 +10,7 @@ description: "Routing for coding work in T3 Code: agent type, model, and effort.
 Takes every task written as a **spec**: a prompt that passes the **spec test**, where a careful
 newcomer to the repo could finish it from the prompt and the tree alone, choosing nothing. Runs on
 deepseek-v4.1-flash. A spec ends with: "Follow the spec. If its approach doesn't fit the code,
-stop and report why. Work alone, with the file, search, and shell tools."
+stop and report why."
 
 ### Specialists
 
@@ -50,17 +50,15 @@ implementer's model at its effort; on a tie, the higher.
 
 Dispatch only these six; another model only when the user names it.
 
-| Short name | Intelligence Index | `providerInstanceId` | Provider |
+| Short name | Intelligence Index | Launch | Provider |
 |---|---|---|---|
-| opus-5.5 | medium: 48, high: 52, xhigh: 57, max: 58 | `claudeAgent` | Anthropic |
-| sonnet-5.5 | medium: 30, high: 41, xhigh: 50, max: 54 | `claudeAgent` | Anthropic |
-| gpt-6.1-sol | medium: 46, high: 50, xhigh: 52, max: 55 | `codex` | OpenAI |
-| gpt-6.1-terra | medium: 38, high: 42, xhigh: 45, max: 51 | `codex` | OpenAI |
-| grok-4.7 | high: 35, xhigh: 34 | `grok` | SpaceXAI |
-| deepseek-v4.1-flash | max: 32 | `acpRegistry_deepseek_harness` | Command Code |
+| opus-5.5 | medium: 48, high: 52, xhigh: 57, max: 58 | `claude --model claude-opus-5-5 --effort <e>` | Anthropic |
+| sonnet-5.5 | medium: 30, high: 41, xhigh: 50, max: 54 | `claude --model claude-sonnet-5-5 --effort <e>` | Anthropic |
+| gpt-6.1-sol | medium: 46, high: 50, xhigh: 52, max: 55 | `codex -m gpt-6.1-sol -c model_reasoning_effort=<e>` | OpenAI |
+| gpt-6.1-terra | medium: 38, high: 42, xhigh: 45, max: 51 | `codex -m gpt-6.1-terra -c model_reasoning_effort=<e>` | OpenAI |
+| grok-4.7 | high: 35, xhigh: 34 | `grok -m grok-4.7 --effort <e>` | SpaceXAI |
+| deepseek-v4.1-flash | max: 32 | `cmd --trust -m deepseek/deepseek-v4.1-flash --effort <e>` | Command Code |
 
-- Pass effort in `target.options` under the option id `orchestrator_capabilities` advertises; it,
-  not the index, says which levels a model supports.
 - **Concurrency.** Run at most 3 agents at once, not counting deepseek-v4.1-flash runs.
 - **Failed runs.** When a run fails with a provider error rather than the model's work, retry the
   same prompt once; if that also fails, move to another model from the table that fits the task.
@@ -79,3 +77,18 @@ names it, or when escalating after a failed run.
 - **Escalating** after a failed run: pick the model and effort with the next higher Intelligence
   Index than every run that failed the task, within the **Effort caps**; on a tie, prefer a model
   that hasn't failed it.
+
+## Launching
+
+Start each agent as an hc child with its model's **Launch** command plus the flag for the
+permission mode you run in:
+
+| Your mode | claude | codex | grok | cmd |
+|---|---|---|---|---|
+| manual | `--permission-mode manual` | `-s workspace-write -a on-request` | `--permission-mode default` | `--permission-mode default` |
+| acceptEdits | `--permission-mode acceptEdits` | `-s workspace-write -a on-request` | `--permission-mode acceptEdits` | `--permission-mode accept-edits` |
+| auto | `--permission-mode auto` | `--approve-for-me` | `--permission-mode auto` | `--yolo` |
+| bypassPermissions | `--permission-mode bypassPermissions` | `--dangerously-bypass-approvals-and-sandbox` | `--permission-mode bypassPermissions` | `--yolo` |
+
+A read-only agent type runs in your checkout. An agent that edits gets its own worktree at
+`~/.herdr/worktrees/<project>/<task>`.

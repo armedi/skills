@@ -32,7 +32,7 @@ results and practitioner reports. What the skill takes from the published multi-
   should not go to a weaker model, which "may not have the ability to properly decide what
   information matters" (see harness-prior-art.md); hence the Explorer role, gpt-6.1-sol at
   `medium`, for plan-shaping questions (its rationale is in
-  [agent-types.md](../t3-routing/agent-types.md)).
+  [agent-types.md](../routing/agent-types.md)).
 - **Specification is the main failure point.** MAST finds multi-agent failures stem mostly from
   system design and inter-agent misalignment, not model limits [R8]. A delegated plan adds a hop,
   and step 5's review needs first-hand understanding anyway.

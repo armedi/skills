@@ -1,22 +1,16 @@
 ---
 name: fusion
-description: Multi-model coding harness for T3 Code. The orchestrator designs and specs, models routed by t3-routing build, another provider reviews.
+description: Multi-model coding harness on herdr-core. The orchestrator designs and specs, models picked by routing build, another provider reviews.
 disable-model-invocation: true
 allowed-tools:
   - Skill
-  - mcp__t3-code__orchestrator_capabilities
-  - mcp__t3-code__delegate_task
-  - mcp__t3-code__t3_thread_send
-  - mcp__t3-code__t3_thread_read
-  - mcp__t3-code__task_status
-  - mcp__t3-code__task_cancel
+  - Bash(hc *)
+  - Bash(git *)
 ---
 
-You are the orchestrator: you make the design calls, split the work, and review it; children make
-every edit to the tree, the smallest fix included, each through `delegate_task` using an agent type
-from the `t3-routing` skill. Invoke it before step 1. On every `delegate_task`, omit `role`.
-Children inherit this thread's `runtimeMode` except `full-access`: when this thread has it, pass
-top-level `runtimeMode: "full-access"`.
+You are the orchestrator: you make the design calls, split the work, and review it; hc children,
+launched by the `routing` skill's **Launching** rules, make every edit to the tree, the smallest
+fix included. Invoke `routing` and `herdr-core` before step 1.
 
 When a read-only child finishes, confirm the tree still matches the baseline.
 
@@ -33,13 +27,13 @@ When a read-only child finishes, confirm the tree still matches the baseline.
 2. **Design.** Write the plan and the task split yourself, and make every judgment call: UX intent,
    API shape, trade-offs. For a bug, hunt the root cause yourself when it is one short chain of
    reasoning. Split until each spec is one concern in a few files; group mechanical edits that
-   share one rationale into a single task. Route each task by `t3-routing`. Group tasks to run in
+   share one rationale into a single task. Route each task by `routing`. Group tasks to run in
    parallel only when it's safe: none needs another's output, and any file overlap merges easily.
 
    Done when every task has an agent type, a model, and an effort level, in the order you will
    dispatch them, with parallel groups marked.
 
-3. **Prompt.** Write each task's prompt: a spec or a brief, as `t3-routing` defines them. Every
+3. **Prompt.** Write each task's prompt: a spec or a brief, as `routing` defines them. Every
    prompt also asks the child to keep to it and leave changes to the plan to you, to commit its
    changes before reporting, and to report each gate's pass/fail. If you save a prompt to a file,
    put it in the OS temp directory.
@@ -51,10 +45,9 @@ When a read-only child finishes, confirm the tree still matches the baseline.
 
    Done when every critique finding is judged and the prompts revised.
 
-4. **Dispatch** the next task in plan order, or every task of the next parallel group, with
-   `delegate_task` and `isolation: "worktree"`, once everything before it has merged; stay within
-   `t3-routing`'s **Concurrency**. When a run fails with a provider error, follow `t3-routing`'s
-   **Failed runs**.
+4. **Dispatch** the next task in plan order, or every task of the next parallel group, each in its
+   own worktree, once everything before it has merged; stay within `routing`'s
+   **Concurrency**. When a run fails with a provider error, follow `routing`'s **Failed runs**.
 
 5. **Review** in the task's worktree, against the baseline:
    - The child committed all its changes.
@@ -70,26 +63,26 @@ When a read-only child finishes, confirm the tree still matches the baseline.
    skipped or every finding is judged.
 
 7. **Rework.**
-   - **Same child first.** Send the fix to the child's `childThreadId` with `t3_thread_send`,
-     `mode: "queue"`. If a stop report shows the task fails the spec test, route it again in
-     step 2.
+   - **Same child first.** Send the fix to the child that made it. If a stop report shows the task
+     fails the spec test, route it again in step 2.
    - **Escalate** when two follow-ups haven't fixed it (a follow-up correcting your own spec
-     doesn't count), or the approach is wrong: a new `delegate_task` with the original prompt plus
-     what failed and its evidence, on the model and effort `t3-routing`'s **Escalating** rule
-     picks. When the evidence doesn't show the cause, first send the **Investigator** the prompt,
-     the task's worktree path, the diff, and the failing gate output.
+     doesn't count), or the approach is wrong: replace the child with a new one in the same
+     worktree, given the original prompt plus what failed and its evidence, on the model and effort
+     `routing`'s **Escalating** rule picks. When the evidence doesn't show the cause, first send
+     the **Investigator** the prompt, the task's worktree path, the diff, and the failing gate
+     output.
    - Ask the user when the fix needs scope beyond the prompt.
 
    Each round goes back through step 5. Done when the task's gates are as green as the baseline and
-   every finding is judged, or the task is a **blocker**: no model and effort within `t3-routing`'s
+   every finding is judged, or the task is a **blocker**: no model and effort within `routing`'s
    **Effort caps** scores higher than one that failed it. On a blocker, finish the tasks already
    running, then go to step 9; otherwise to step 8.
 
 8. **Merge** the task's branch into this checkout. On a conflict, have the child rebase its branch
    onto this checkout's HEAD, and review it again from step 5.
 
-   Done when the branch is merged with every gate as green as the baseline. Update baseline HEAD
-   and snapshot; continue at step 4, or finally step 9.
+   Done when the branch is merged with every gate as green as the baseline. Remove its worktree,
+   update baseline HEAD and snapshot; continue at step 4, or finally step 9.
 
 9. **Hand off.** Summarize what changed, validation against the initial baseline, and unresolved
    blockers or risks.

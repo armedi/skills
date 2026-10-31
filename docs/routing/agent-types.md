@@ -1,6 +1,6 @@
-# t3-routing agent types: why each row (2026-10-29)
+# routing agent types: why each row (2026-10-29)
 
-The decision record for the agent-type tables in [SKILL.md](../../skills/t3-routing/SKILL.md) [1].
+The decision record for the agent-type tables in [SKILL.md](../../skills/routing/SKILL.md) [1].
 Benchmark numbers live in [model-roles.md](../fusion/model-roles.md) [3]. This file quotes only the
 comparison that decides each row and cites the section of [3] that holds the rest.
 
@@ -158,8 +158,8 @@ Rules behind every row:
 
 ## Sources
 
-1. t3-routing skill (working copy, 2026-10-29) — `skills/t3-routing/SKILL.md`
-2. Repo history — `git log -p -- skills/t3-routing/SKILL.md skills/fusion/SKILL.md docs/fusion/model-roles.md`
+1. routing skill (working copy, 2026-10-29) — `skills/routing/SKILL.md`
+2. Repo history — `git log -p -- skills/routing/SKILL.md skills/fusion/SKILL.md docs/fusion/model-roles.md`
 3. Model evidence — [`docs/fusion/model-roles.md`](../fusion/model-roles.md)
 4. Harness prior art (HydraFusion, Rubber Duck, explorer guidance) — [`docs/fusion/harness-prior-art.md`](../fusion/harness-prior-art.md)
 5. Fusion skill (consumer of type names) — `skills/fusion/SKILL.md`
