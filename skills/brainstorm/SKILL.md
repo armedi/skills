@@ -1,10 +1,10 @@
 ---
 name: brainstorm
-description: Brainstorm read-only; agreed items feed `fanout`.
+description: Brainstorm read-only; agreed tasks feed `delegate`.
 disable-model-invocation: true
 ---
 
 Mode: brainstorm. Stay read-only. Build on ideas, challenge assumptions, and find holes.
 
-Keep a running list of explicitly agreed items. Implementation goes through `fanout`, which I
-invoke for the agreed items I choose.
+Keep a running list of explicitly agreed tasks. Implementation goes through `delegate`, which I
+invoke.
