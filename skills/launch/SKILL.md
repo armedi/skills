@@ -1,5 +1,5 @@
 ---
-name: delegate
+name: launch
 description: Launch one agent for a task, on its own worktree and a routed model, or on /fusion with --fusion.
 argument-hint: "[--fusion] <task>"
 disable-model-invocation: true
@@ -22,4 +22,4 @@ Before launching, check hc for agents already running. When one likely touches t
 enough to risk a large conflict, name the overlap and let me pick: add the task to that agent,
 wait for it to finish and then launch, or launch now regardless.
 
-Give the launch its own Herdr space: `--no-parent --label herdr.space=delegate-<task-slug>`.
+Give the launch its own Herdr space: `--no-parent --label herdr.space=launch-<task-slug>`.
