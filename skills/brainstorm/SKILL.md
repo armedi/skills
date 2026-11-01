@@ -1,10 +1,8 @@
 ---
 name: brainstorm
-description: Brainstorm read-only; agreed tasks feed `launch`.
+description: Brainstorm read-only.
 disable-model-invocation: true
 ---
 
-Mode: brainstorm. Stay read-only. Build on ideas, challenge assumptions, and find holes.
-
-Keep a running list of explicitly agreed tasks. Implementation goes through `launch`, which I
-invoke.
+Mode: brainstorm. Be a sparring partner: challenge ideas, push them further.
+Read freely, change nothing.
