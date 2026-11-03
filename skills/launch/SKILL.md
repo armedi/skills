@@ -1,6 +1,6 @@
 ---
 name: launch
-description: Launch one agent for a task as a top-level session on its own worktree, or as a /fusion orchestrator with --fusion.
+description: Launch one agent for a task as a top-level session on its own worktree, or as a fusion orchestrator with --fusion.
 argument-hint: "[--fusion] <task>"
 disable-model-invocation: true
 ---

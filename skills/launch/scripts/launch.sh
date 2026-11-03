@@ -153,8 +153,6 @@ EOF
   exit 0
 fi
 
-[ -n "$fusion" ] && prompt="/fusion $prompt"
-
 name=$(printf '%s\n' "$title" | LC_ALL=C awk '
   { text = text " " tolower($0) }
   END {
@@ -214,14 +212,12 @@ session_json=$(opencode api session.create -d "{\"title\":$(json "$title"),\"mod
 session=$(printf '%s' "$session_json" | jq -r '(.data // .).id // empty' 2>/dev/null || true)
 [ -n "$session" ] || { echo "launch.sh: session.create failed${session_json:+: $session_json}" >&2; exit 1; }
 
+# The skills attachment loads the skill; the @mention only marks it in the text.
 skills=
-case $prompt in
-  /*)
-    command=${prompt%%[[:space:]]*}
-    skill=${command#/}
-    skills=",\"skills\":[{\"id\":$(json "$skill"),\"mention\":{\"start\":0,\"end\":${#command},\"text\":$(json "$command")}}]"
-    ;;
-esac
+if [ -n "$fusion" ]; then
+  prompt="@fusion $prompt"
+  skills=',"skills":[{"id":"fusion","mention":{"start":0,"end":7,"text":"@fusion"}}]'
+fi
 
 if ! opencode api session.prompt --param "sessionID=$session" -d "{\"text\":$(json "$prompt")$skills}" >/dev/null; then
   opencode api session.remove --param "sessionID=$session" >/dev/null 2>&1 || true
