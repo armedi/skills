@@ -24,7 +24,7 @@ Expand the task so the prompt stands alone; the launched agent has none of this 
    - **With `--fusion`:** pass it on, with the task as the prompt and the model `routing` picks for
      a fusion orchestrator.
    - **Without:** write the prompt as a spec or a brief, as `routing` defines them, on the model
-     `routing` gives that handoff; tell the agent to work and commit only in its worktree.
+     `routing` gives that handoff; ask the agent to commit its work.
    - `<title>`: names the session, the worktree, and its new branch. Write a headline naming the change, e.g.
      `Fix login redirect loop`, distinct from its siblings at a glance.
 
