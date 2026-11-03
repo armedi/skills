@@ -1,25 +1,31 @@
 ---
 name: launch
-description: Launch one agent for a task, on its own worktree and a routed model, or on /fusion with --fusion.
+description: Launch one agent for a task as a top-level session on its own worktree, or as a /fusion orchestrator with --fusion.
 argument-hint: "[--fusion] <task>"
 disable-model-invocation: true
-allowed-tools:
-  - Skill
-  - Bash(hc *)
-  - Bash(git *)
 ---
 
-Invoke `routing` and `herdr-core` first.
+Invoke `routing` first.
 
-Launch one agent for the task, in an hc terminal on its own worktree, following `routing`'s
-**Launching** rules. The task may point at something agreed earlier in this conversation; expand
-it so the prompt stands alone.
+Expand the task so the prompt stands alone; the launched agent has none of this conversation.
 
-- **With `--fusion`:** launch opus-5.5 at `high` with the prompt `/fusion <task>`.
-- **Without:** route the task by `routing`.
+1. Infer the task's likely edit scope, then run `scripts/launch.sh --sessions`. File `status` is
+   relative to this worktree; an active session with no files may simply not have edited yet.
+   Judge overlap from file paths and session titles. Launch unrelated work directly; mention
+   small, localized overlaps without blocking. Resolve every likely large conflict with me before
+   launching: reuse the worktree/session, wait for integration, or proceed regardless.
 
-Before launching, check hc for agents already running. When one likely touches the same files
-enough to risk a large conflict, name the overlap and let me pick: add the task to that agent,
-wait for it to finish and then launch, or launch now regardless.
+2. Launch. The worktree starts at this checkout's HEAD; uncommitted changes stay behind.
 
-Give the launch its own Herdr space: `--no-parent --label herdr.space=launch-<task-slug>`.
+   ```
+   scripts/launch.sh --model <model> --title <title> [--fusion] <prompt>
+   ```
+
+   - **With `--fusion`:** pass it on, with the task as the prompt and the model `routing` picks for
+     a fusion orchestrator.
+   - **Without:** write the prompt as a spec or a brief, as `routing` defines them, on the model
+     `routing` gives that handoff; tell the agent to work and commit only in its worktree.
+   - `<title>`: names the session, the worktree, and its new branch. Write a headline naming the change, e.g.
+     `Fix login redirect loop`, distinct from its siblings at a glance.
+
+3. Report the session ID and the worktree path.
