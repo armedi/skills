@@ -4,8 +4,7 @@ description: "Model selection, second opinions, and escalation for OpenCode suba
 ---
 
 Pick the agent by its description. Always pass `model` as `<id>#<effort>`, choosing a row by its
-**Use** column. `general` and `explore` always take DeepSeek, to spread usage off the Claude and
-OpenAI quotas.
+**Use** column.
 
 ## Handoffs
 
@@ -16,8 +15,8 @@ approach doesn't fit the code, stop and report why."
 A **brief** gives the outcome, constraints, and completion criteria, leaving design decisions to
 the child. Send it to `specialist`, asking for objections with evidence.
 
-A **second opinion** goes to a fresh `critic` with a model whose maker differs from the parent's,
-and from the implementer's once one exists.
+A **second opinion** goes to a fresh `critic` whose maker differs from the parent's, and from the
+implementer's once one exists.
 
 ## Models
 
@@ -32,7 +31,7 @@ GPT-6.1 data, so OpenAI rows rest on FrontierCode alone.
 
 | Model#effort | Maker | Use | FrontierCode | FrontierCode $/task | CursorBench | CursorBench $/task | OpenCode model ID |
 |---|---|---|---|---|---|---|---|
-| deepseek#max | DeepSeek | `general` and `explore`, always | 28.5% | 0.60 | 47.7% | 0.98 | `commandcode/deepseek/deepseek-v4.1-flash` |
+| deepseek#max | DeepSeek | `general` and `explore` | 28.5% | 0.60 | 47.7% | 0.98 | `commandcode/deepseek/deepseek-v4.1-flash` |
 | terra#high | OpenAI | Routine brief | 37.5% | 0.26 | – | – | `openai/gpt-6.1-terra` |
 | terra#max | OpenAI | Design or multi-file brief; after Terra high fails | 42.3% | 0.96 | – | – | `openai/gpt-6.1-terra` |
 | sol#high | OpenAI | OpenAI critic of Opus work; OpenAI retry after Terra fails | 36.7% | 0.59 | – | – | `openai/gpt-6.1-sol` |
