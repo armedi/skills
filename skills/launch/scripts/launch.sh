@@ -1,13 +1,15 @@
 #!/bin/sh
-# Creates its own worktree from the caller's HEAD; callers supply the task and launch options.
+# Creates its own worktree from the caller's HEAD (or --commit); callers supply the task and launch options.
+# --on <host>:<path> reruns this script over ssh against the same repo cloned at <path> on <host>.
 # A parentless session on the shared service survives the caller and can run subagents.
 # Success confirms prompt submission, not task completion.
 set -eu
 
 usage() {
   cat >&2 <<'EOF'
-usage: launch.sh --model <provider/model#variant> --title <title> [--fusion] [--repo <dir>] <prompt>
-       launch.sh --sessions [--repo <dir>]
+usage: launch.sh --model <provider/model#variant> --title <title> [--fusion] [--repo <dir>]
+                 [--on <host>:<path>] [--commit <sha>] <prompt>
+       launch.sh --sessions [--repo <dir>] [--on <host>:<path>]
 EOF
 }
 
@@ -16,6 +18,10 @@ fusion=
 model=
 title=
 repo=.
+on=
+commit=
+# Set only by the --on hop: marks a remote run, which prefixes paths and lists session titles only.
+display_host=
 prompt=
 have_prompt=
 while [ $# -gt 0 ]; do
@@ -25,12 +31,18 @@ while [ $# -gt 0 ]; do
     --model=*) model=${1#*=} ;;
     --title=*) title=${1#*=} ;;
     --repo=*) repo=${1#*=} ;;
-    --model|--title|--repo)
+    --on=*) on=${1#*=} ;;
+    --commit=*) commit=${1#*=} ;;
+    --display-host=*) display_host=${1#*=} ;;
+    --model|--title|--repo|--on|--commit|--display-host)
       [ $# -ge 2 ] || { usage; exit 2; }
       case $1 in
         --model) model=$2 ;;
         --title) title=$2 ;;
         --repo) repo=$2 ;;
+        --on) on=$2 ;;
+        --commit) commit=$2 ;;
+        --display-host) display_host=$2 ;;
       esac
       shift ;;
     --)
@@ -51,13 +63,40 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$mode" = sessions ]; then
-  [ -z "$have_prompt$fusion$model$title" ] || { usage; exit 2; }
+  [ -z "$have_prompt$fusion$model$title$commit" ] || { usage; exit 2; }
 else
   [ -n "$have_prompt" ] && [ -n "$model" ] && [ -n "$title" ] || { usage; exit 2; }
 fi
 
+if [ -n "$on" ]; then
+  host=${on%%:*}
+  path=${on#*:}
+  [ "$host" != "$on" ] && [ -n "$host" ] && [ -n "$path" ] ||
+    { echo "launch.sh: --on needs <host>:<path>" >&2; exit 2; }
+  [ -n "$commit" ] || commit=$(git -C "$repo" rev-parse HEAD)
+
+  # ssh joins arguments into one remote command line; single-quote each one.
+  q() { printf "'%s'" "$(printf '%s' "$1" | sed "s/'/'\\\\''/g")"; }
+  args="--repo $(q "$path") --display-host $(q "$host")"
+  if [ "$mode" = sessions ]; then
+    args="--sessions $args"
+  else
+    args="$args --commit $(q "$commit") --model $(q "$model") --title $(q "$title")"
+    [ -z "$fusion" ] || args="$args --fusion"
+    args="$args -- $(q "$prompt")"
+  fi
+
+  # Stage the script in a file first so remote commands cannot read the rest of it from stdin.
+  exec ssh -o BatchMode=yes "$host" \
+    "f=\$(mktemp) && cat >\"\$f\" && sh \"\$f\" $args; rc=\$?; rm -f \"\$f\"; exit \$rc" <"$0"
+fi
+
 command -v jq >/dev/null 2>&1 || { echo "launch.sh: jq is required" >&2; exit 1; }
 
+case $repo in
+  "~") repo=$HOME ;;
+  "~/"*) repo=$HOME/${repo#"~/"} ;;
+esac
 repo=$(cd "$repo" && pwd -P)
 repo=$(git -C "$repo" rev-parse --show-toplevel)
 
@@ -143,9 +182,11 @@ if [ "$mode" = sessions ]; then
   while IFS= read -r record; do
     directory=$(printf '%s' "$record" | jq -r '.directory')
     [ -d "$directory" ] || continue
-    files=$(changed_files "$directory")
-    printf '%s' "$record" | jq -c --argjson files "$files" '
-      . + {files: $files} | select((.files | length) > 0 or (.activeSessions | length) > 0)
+    # A remote caller's files live on another machine; it judges overlap by titles alone.
+    if [ -n "$display_host" ]; then files='[]'; else files=$(changed_files "$directory"); fi
+    printf '%s' "$record" | jq -c --argjson files "$files" --arg prefix "${display_host:+$display_host:}" '
+      . + {directory: ($prefix + .directory), files: $files}
+      | select((.files | length) > 0 or (.activeSessions | length) > 0)
     '
   done <<EOF
 $records
@@ -196,17 +237,23 @@ opencode api model.list | jq -r --arg provider "$provider" --arg model "$model_i
 ! git -C "$repo" show-ref --verify --quiet "refs/heads/$name" ||
   { echo "launch.sh: branch $name already exists; choose another title" >&2; exit 2; }
 
+if [ -n "$commit" ] && ! git -C "$repo" cat-file -e "$commit^{commit}" 2>/dev/null; then
+  git -C "$repo" fetch --all --quiet || echo "launch.sh: fetch failed in $repo" >&2
+  git -C "$repo" cat-file -e "$commit^{commit}" 2>/dev/null ||
+    { echo "launch.sh: commit $commit not found in ${display_host:+$display_host:}$repo; push it first" >&2; exit 1; }
+fi
+
 # Without "from", the worktree starts at the canonical checkout's HEAD, not the caller's.
 # OpenCode always detaches it, so the branch is created afterwards.
 worktree_json=$(opencode api worktree.create -d "{\"projectID\":$(json "$project"),\"name\":$(json "$name"),\"from\":$(json "$repo")}" || true)
 worktree=$(printf '%s' "$worktree_json" | jq -r '(.data // .).directory // empty' 2>/dev/null || true)
 [ -n "$worktree" ] || { echo "launch.sh: worktree.create failed${worktree_json:+: $worktree_json}" >&2; exit 1; }
-if ! git -C "$worktree" switch --quiet -c "$name"; then
+if ! git -C "$worktree" switch --quiet -c "$name" "${commit:-HEAD}"; then
   opencode api worktree.remove -d "{\"projectID\":$(json "$project"),\"directory\":$(json "$worktree"),\"force\":true}" >/dev/null 2>&1 || true
   echo "launch.sh: could not create branch $name; removed worktree $worktree" >&2
   exit 1
 fi
-echo "worktree $worktree branch $name" >&2
+echo "worktree ${display_host:+$display_host:}$worktree branch $name" >&2
 
 session_json=$(opencode api session.create -d "{\"title\":$(json "$title"),\"model\":{\"providerID\":$(json "$provider"),\"id\":$(json "$model_id")$variant},\"location\":{\"directory\":$(json "$worktree")}}" || true)
 session=$(printf '%s' "$session_json" | jq -r '(.data // .).id // empty' 2>/dev/null || true)
