@@ -8,6 +8,8 @@ Pick the agent by its description. Always pass `model` as `<id>#<effort>`, choos
 
 ## Handoffs
 
+In every handoff, ask: "Return proof that the work satisfies the request."
+
 A **spec** passes the **spec test**: a careful newcomer could finish from the prompt and tree
 alone, making no design decisions. Send it to `general`, ending with: "Follow the spec. If its
 approach doesn't fit the code, stop and report why."

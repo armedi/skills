@@ -10,11 +10,11 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
 
 1. **Explore.** Read the code the work touches yourself; for a broad sweep, dispatch `explore`
    subagents in the background, one specific question each. While they work, record the
-   **baseline**: `git rev-parse HEAD`, the result of running each gate once, and a **snapshot** of
-   the tree after the gates ran, so gate artifacts aren't mistaken for a child's work. A snapshot is a tree id taken without touching the index:
+   **baseline**: `git rev-parse HEAD`, the results of checks relevant to the change, and a **snapshot** of
+   the tree after the checks ran, so check artifacts aren't mistaken for a child's work. A snapshot is a tree id taken without touching the index:
    `GIT_INDEX_FILE=$(mktemp -u) sh -c 'git add -A && git write-tree'`.
 
-   Done when the baseline is recorded with the gates that were already red, and every explorer
+   Done when the baseline is recorded with the checks that were already failing, and every explorer
    has answered with its cited lines spot-checked.
 
 2. **Design.** Write the plan and the task split yourself, and make every judgment call: UX intent,
@@ -28,8 +28,7 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
 
 3. **Prompt.** Write each task's prompt: a spec or a brief, as `routing` defines them. Every
    prompt also asks the child to keep to it and leave changes to the plan to you, to commit its
-   changes before reporting, and to report each gate's pass/fail. If you save a prompt to a file,
-   put it in the OS temp directory.
+   changes before reporting. If you save a prompt to a file, put it in the OS temp directory.
 
    **Plan critique.** Before the first dispatch, send a second opinion the user's request, your
    plan, and every prompt when the work includes:
@@ -48,9 +47,11 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
 5. **Review** in the task's worktree, against the baseline:
    - The child committed all its changes.
    - Read the full `git diff <baseline HEAD>...<its HEAD>`, skimming generated output.
+   - Judge whether the child's proof demonstrates that the diff satisfies the request.
    - Tests: weakened, skipped, or deleted tests count as failure; new tests must assert something
      real.
-   - Re-run every gate yourself; a gate the child turned red is a defect.
+   - Independently verify consequential claims and run checks relevant to the change; a regression
+     from the baseline is a defect.
 
    Done when every check above has passed or its defect is sent to step 7.
 
@@ -65,21 +66,19 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
      doesn't count), or the approach is wrong: replace the child with a new one in the same
      worktree, given the original prompt plus what failed and its evidence, on the agent and
      `model#effort` `routing`'s **Escalation** picks. When the evidence doesn't show the cause,
-     first send a second opinion the prompt, the task's worktree path, the diff, and the failing
-     gate output.
+     first send a second opinion the prompt, the task's worktree path, the diff, and the failure
+     evidence.
    - Ask the user when the fix needs scope beyond the prompt.
 
-   Each round goes back through step 5. Done when the task's gates are as green as the baseline and
-   every finding is judged, or the task is a **blocker**: `routing`'s **Escalation** has no model
-   left for it. On a blocker, finish the tasks already running, then go to step 9; otherwise to
-   step 8.
+   Each round goes back through step 5. Done when review passes and every finding is judged, or
+   the task is a **blocker**: `routing`'s **Escalation** has no model left for it. On a blocker,
+   finish the tasks already running, then go to step 9; otherwise to step 8.
 
 8. **Merge** the task's HEAD into this checkout. On a conflict, have the child rebase onto this
    checkout's HEAD, and review it again from step 5.
 
-   Done when the work is merged with every gate as green as the baseline. Remove its worktree
+   Done when the work is merged with relevant checks showing no regressions. Remove its worktree
    with `opencode.worktree_remove`, update baseline HEAD and snapshot; continue at step 4, or
    finally step 9.
 
-9. **Hand off.** Summarize what changed, validation against the initial baseline, and unresolved
-   blockers or risks.
+9. **Hand off.** Present the proof and unresolved blockers or risks.
