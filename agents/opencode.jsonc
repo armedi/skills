@@ -1,0 +1,58 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+  "shell": "zsh",
+  "model": "commandcode/deepseek/deepseek-v4.1-flash",
+  "agents": {
+    "general": {
+      "model": "commandcode/deepseek/deepseek-v4.1-flash"
+    },
+    "explore": {
+      "model": "commandcode/deepseek/deepseek-v4.1-flash"
+    },
+    "specialist": {
+      "description": "Handles difficult implementation briefs requiring deep reasoning or consequential design judgment. Use when the approach remains unresolved and ordinary execution is insufficient.",
+      "mode": "subagent",
+      "permissions": [
+        { "action": "subagent", "resource": "*", "effect": "deny" },
+        { "action": "question", "resource": "*", "effect": "deny" },
+        { "action": "browser", "resource": "*", "effect": "deny" },
+        { "action": "skill", "resource": "browser", "effect": "deny" }
+      ]
+    },
+    "critic": {
+      "description": "Provides independent second opinions on plans, code changes, and diagnoses. Use when assumptions or correctness need to be challenged with evidence; select an independent model at dispatch.",
+      "mode": "subagent",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "deny" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" },
+        { "action": "webfetch", "resource": "*", "effect": "allow" },
+        { "action": "websearch", "resource": "*", "effect": "allow" },
+        { "action": "skill", "resource": "*", "effect": "allow" },
+        { "action": "external_directory", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "*", "effect": "allow" },
+        { "action": "read", "resource": "*.env", "effect": "ask" },
+        { "action": "read", "resource": "*.env.*", "effect": "ask" },
+        { "action": "read", "resource": "*.env.example", "effect": "allow" }
+      ]
+    },
+    "computer-use": {
+      "description": "Reproduces and verifies observable behavior through browser or desktop interaction. Use when screenshots, code inspection, or command output alone cannot establish the result.",
+      "mode": "subagent",
+      "model": "openai/gpt-6.1-terra#medium",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "deny" },
+        { "action": "browser", "resource": "*", "effect": "allow" },
+        { "action": "execute", "resource": "*", "effect": "allow" },
+        { "action": "skill", "resource": "browser", "effect": "allow" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "external_directory", "resource": "*", "effect": "allow" },
+        { "action": "read", "resource": "*.env", "effect": "ask" },
+        { "action": "read", "resource": "*.env.*", "effect": "ask" },
+        { "action": "read", "resource": "*.env.example", "effect": "allow" }
+      ]
+    }
+  }
+}
