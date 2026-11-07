@@ -30,7 +30,7 @@ Delete code only when a repo search shows it is unused. Keep public or compatibi
 
 ## Edit
 
-Change only those removals and simplifications and the call sites they affect. Keep formatting and names unchanged. Keep behavior identical across every branch the simplification touches. Keep every edit unstaged; never commit.
+Change only those removals and simplifications and the call sites they affect. Keep formatting and names unchanged. Keep behavior identical across every branch the simplification touches.
 
 Run the linters or tests covering touched files and fix failures the edit caused.
 
