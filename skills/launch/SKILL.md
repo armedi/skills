@@ -1,7 +1,7 @@
 ---
 name: launch
 description: Launch one agent for a task as a top-level session on its own worktree, or as a fusion orchestrator with --fusion.
-argument-hint: "[--fusion] <task>"
+argument-hint: "[--fusion] [--model <model>] <task>"
 disable-model-invocation: true
 ---
 
@@ -21,10 +21,11 @@ Expand the task so the prompt stands alone; the launched agent has none of this 
    scripts/launch.sh --model <model> --title <title> [--fusion] <prompt>
    ```
 
-   - **With `--fusion`:** pass it on, with the task as the prompt and the model `routing` picks for
-     a fusion orchestrator.
-   - **Without:** write the prompt as a spec or a brief, as `routing` defines them, on the model
-     `routing` gives that handoff; ask the agent to commit its work.
+   - **`--model`:** if the invocation includes `--model <model>`, pass it as-is; otherwise use the
+     model `routing` picks (fusion orchestrator with `--fusion`, else the handoff's model).
+   - **With `--fusion`:** pass it on, with the task as the prompt.
+   - **Without:** write the prompt as a spec or a brief, as `routing` defines them; ask the agent
+     to commit its work.
    - `<title>`: names the session, the worktree, and its new branch. Write a headline naming the change, e.g.
      `Fix login redirect loop`, distinct from its siblings at a glance.
 
