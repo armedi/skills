@@ -28,7 +28,8 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
 
 3. **Prompt.** Write each task's prompt: a spec or a brief, as `routing` defines them. Every
    prompt also asks the child to keep to it and leave changes to the plan to you, to commit its
-   changes before reporting. If you save a prompt to a file, put it in the OS temp directory.
+   changes before reporting. If you save a prompt to a file, put it in the OS temp directory
+   (`$TMPDIR`, else `/tmp`; `%TEMP%` on Windows), not the workspace.
 
    **Plan critique.** Before the first dispatch, send a second opinion the user's request, your
    plan, and every prompt when the work includes:
