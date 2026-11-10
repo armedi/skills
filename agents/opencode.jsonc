@@ -5,10 +5,10 @@
   "model": "commandcode/deepseek/deepseek-v4.1-flash",
   "agents": {
     "general": {
-      "model": "commandcode/deepseek/deepseek-v4.1-flash"
+      "model": "commandcode/deepseek/deepseek-v4.1-flash#max"
     },
     "explore": {
-      "model": "commandcode/deepseek/deepseek-v4.1-flash"
+      "model": "commandcode/deepseek/deepseek-v4.1-flash#high"
     },
     "specialist": {
       "description": "Handles difficult implementation briefs requiring deep reasoning or consequential design judgment. Use when the approach remains unresolved and ordinary execution is insufficient.",
@@ -41,7 +41,7 @@
     "computer-use": {
       "description": "Reproduces and verifies observable behavior through browser or desktop interaction. Use when screenshots, code inspection, or command output alone cannot establish the result.",
       "mode": "subagent",
-      "model": "openai/gpt-6.1-terra#medium",
+      "model": "openai/gpt-6.1-terra#high",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "deny" },
         { "action": "browser", "resource": "*", "effect": "allow" },
