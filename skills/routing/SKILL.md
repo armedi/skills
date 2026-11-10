@@ -23,8 +23,8 @@ implementer's once one exists.
 ## Models
 
 Use these unless the user names another. Verify the ID in the model catalog. Maker means creator,
-not serving provider. Only listed efforts are allowed; `xhigh`/`max` are listed only where they
-measurably beat the lower effort.
+not serving provider. Only listed efforts are allowed. The brief ladder under Escalation never steps
+from a smarter model to a less smart one: Sol, then Opus.
 
 FrontierCode is Artificial Analysis's FrontierCode 2.0 pass rate (would a maintainer merge it);
 CursorBench is CursorBench 4.0 (ambiguous multi-file tasks); "–" means not measured. Each `$/task`
@@ -33,20 +33,26 @@ GPT-6.1 data, so OpenAI rows rest on FrontierCode alone.
 
 | Model#effort | Maker | Use | FrontierCode | FrontierCode $/task | CursorBench | CursorBench $/task | OpenCode model ID |
 |---|---|---|---|---|---|---|---|
-| deepseek#max | DeepSeek | `general` and `explore` | 28.5% | 0.60 | 47.7% | 0.98 | `commandcode/deepseek/deepseek-v4.1-flash` |
-| terra#high | OpenAI | Routine brief | 37.5% | 0.26 | – | – | `openai/gpt-6.1-terra` |
-| terra#max | OpenAI | Design or multi-file brief; after Terra high fails | 42.3% | 0.96 | – | – | `openai/gpt-6.1-terra` |
-| sol#high | OpenAI | OpenAI critic of Opus work; OpenAI retry after Terra fails | 36.7% | 0.59 | – | – | `openai/gpt-6.1-sol` |
-| opus#medium | Anthropic | Anthropic critic of Terra high or Sol work | 33.1% | 2.45 | 52.5% | 2.91 | `claude-agent/opus` |
-| opus#high | Anthropic | Fusion orchestrator; high-stakes brief (security, migrations, data integrity, public API); after Terra max fails; Anthropic critic of Terra max work | 35.9% | 3.46 | 56.0% | 3.97 | `claude-agent/opus` |
-| opus#xhigh | Anthropic | Last resort, after Opus high fails; gains on FrontierCode only | 43.8% | 6.05 | 56.0% | 6.98 | `claude-agent/opus` |
+| deepseek#max | DeepSeek | `general` and `explore` | 28.5% | 0.52 | 47.7% | 0.98 | `commandcode/deepseek/deepseek-v4.1-flash` |
+| terra#medium | OpenAI | `computer-use` | 34.5% | 0.26 | – | – | `openai/gpt-6.1-terra` |
+| sol#medium | OpenAI | Brief with clear scope and existing patterns to follow | 33.4% | 0.41 | – | – | `openai/gpt-6.1-sol` |
+| sol#high | OpenAI | Brief spanning several files in one module, or a bug that needs diagnosis first | 36.7% | 0.63 | – | – | `openai/gpt-6.1-sol` |
+| sol#xhigh | OpenAI | Brief with design decisions inside one module; OpenAI critic of Opus work | 38.5% | 0.70 | – | – | `openai/gpt-6.1-sol` |
+| sol#max | OpenAI | Brief with design decisions across modules, or in code with no pattern to follow | 40.6% | 1.13 | – | – | `openai/gpt-6.1-sol` |
+| opus#medium | Anthropic | Anthropic critic of Sol work | 33.1% | 1.71 | 52.5% | 2.91 | `claude-agent/opus` |
+| opus#high | Anthropic | Fusion orchestrator; high-stakes brief (security, migrations, data integrity, public API) | 35.9% | 2.49 | 56.0% | 3.97 | `claude-agent/opus` |
+| opus#xhigh | Anthropic | Brief with cross-cutting design, concurrency, subtle correctness, or no known path to a solution | 43.8% | 6.49 | 56.0% | 6.98 | `claude-agent/opus` |
 | grok#high | xAI | Critic when Anthropic and OpenAI are both excluded | – | – | 43.9% | 4.69 | `xai/grok-4.7` |
 
 ## Escalation
 
+- Start at the row whose Use matches the task's difficulty, not the cheapest row. A failed run
+  costs its own price plus your review and re-dispatch, so when torn between two rows, take the
+  higher.
 - Before escalating, split the task and spec the parts that pass the spec test.
-- On failure, take the row whose Use names that failure; prefer a model that hasn't failed the
-  task. If none remains, report the blocker.
+- On failure, re-judge the difficulty with what the failure revealed, then take the matching
+  brief row above the failed one: sol#medium, sol#high, sol#xhigh, sol#max, opus#xhigh. A failed
+  opus#high run moves to opus#xhigh. Past opus#xhigh, report the blocker.
 - A spec that fails on `general` gets a sharper spec, or goes to another agent as a brief.
 
 ## Failures
