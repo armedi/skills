@@ -31,12 +31,12 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
    changes before reporting. If you save a prompt to a file, put it in the OS temp directory
    (`$TMPDIR`, else `/tmp`; `%TEMP%` on Windows), not the workspace.
 
-   **Plan critique.** Before the first dispatch, send a second opinion the user's request, your
-   plan, and every prompt when the work includes:
-   - a high-stakes brief, or a new program or module;
-   - a spec that crosses modules or rests on code you haven't read in full.
+   **Plan critique** only when the work is high-stakes (a defect would touch security,
+   migrations, data integrity, or a public API) or builds a new program or module: before the
+   first dispatch, send a second opinion the user's request, your plan, and every prompt.
 
-   Done when every critique finding is judged and the prompts revised.
+   Done when every prompt is written, and the critique is skipped or its every finding is judged
+   and the prompts revised.
 
 4. **Dispatch** the next task in plan order, or every task of the next parallel group as
    background subagents, once everything before it has merged. Give each editing child its own
@@ -56,9 +56,8 @@ routed by the `routing` skill, make every edit to the tree, the smallest fix inc
 
    Done when every check above has passed or its defect is sent to step 7.
 
-6. **Cross-review** only for high-risk changes or unresolved correctness concerns: send a second
-   opinion the original prompt, the task's worktree path, and the diff range. Done when
-   skipped or every finding is judged.
+6. **Cross-review** only a high-stakes diff: send a second opinion the original prompt, the task's
+   worktree path, and the diff range. Done when skipped or every finding is judged.
 
 7. **Rework.**
    - **Same child first.** Send the fix to the child that made it, by its session ID. If a stop

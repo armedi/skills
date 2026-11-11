@@ -13,6 +13,7 @@
     "specialist": {
       "description": "Handles difficult implementation briefs requiring deep reasoning or consequential design judgment. Use when the approach remains unresolved and ordinary execution is insufficient.",
       "mode": "subagent",
+      "model": "commandcode/deepseek/deepseek-v4.1-flash#max",
       "permissions": [
         { "action": "subagent", "resource": "*", "effect": "deny" },
         { "action": "question", "resource": "*", "effect": "deny" },
