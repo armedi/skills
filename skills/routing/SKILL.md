@@ -37,8 +37,8 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 | deepseek#high | DeepSeek | `explore` | FrontierCode: Cognition 18.2% ($0.27), AA 16.8% ($0.35) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
 | deepseek#max | DeepSeek | `general`, `specialist` | FrontierCode: Cognition 19.3% ($0.38), AA 28.5% ($0.52) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
 | terra#high | OpenAI | `computer-use` | OSWorld: 68.7% ($0.51) | `acp-codex/gpt-6.1-terra` |
-| sol#high | OpenAI | `critic` | FrontierCode: Cognition 34.8% ($0.65), AA 36.7% ($0.63) | `acp-codex/gpt-6.1-sol` |
-| sol#max | OpenAI | `specialist` after escalation | FrontierCode: Cognition 39.0% ($1.03), AA 40.6% ($1.13) | `acp-codex/gpt-6.1-sol` |
+| sol#high | OpenAI | `critic` | FrontierCode: Cognition 34.8% ($0.65), AA 36.7% ($0.63) | `acp-codex/gpt-6.2-sol` |
+| sol#max | OpenAI | `specialist` after escalation | FrontierCode: Cognition 39.0% ($1.03), AA 40.6% ($1.13) | `acp-codex/gpt-6.2-sol` |
 | opus#high | Anthropic | Fusion orchestrator; `specialist` after escalation when OpenAI is excluded; `critic` of Sol work | FrontierCode: Cognition 34.5% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
 
 ## Escalation
