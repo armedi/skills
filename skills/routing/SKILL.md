@@ -25,7 +25,7 @@ wrote the plan or diff under review.
 Use these unless the user names another. Verify the ID in the model catalog. Maker means creator,
 not serving provider. Only listed efforts are allowed.
 
-**Benchmark** gives each row's score, with its USD cost per task in parentheses:
+**Benchmark** gives scores with API-priced USD cost per task (checked 2026-11-21):
 FrontierCode 2.0 (would a maintainer merge the change) from
 [Cognition](https://cognition.com/frontiercode) and
 [Artificial Analysis](https://artificialanalysis.ai/evaluations/frontiercode-2-0) (AA), or
@@ -34,14 +34,14 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 
 | Model#effort | Maker | Agents | Benchmark | OpenCode model ID |
 |---|---|---|---|---|
-| deepseek#high | DeepSeek | `explore` | FrontierCode: Cognition 18.2% ($0.27), AA 16.8% ($0.35) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
-| deepseek#max | DeepSeek | `general`, `specialist` | FrontierCode: Cognition 19.3% ($0.38), AA 28.5% ($0.52) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
+| deepseek#high | DeepSeek | `explore` | FrontierCode: Cognition 19.8% ($0.27), AA 16.8% ($0.35) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
+| deepseek#max | DeepSeek | `general`, `specialist` | FrontierCode: Cognition 20.2% ($0.38), AA 28.5% ($0.52) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
 | terra#high | OpenAI | `computer-use` | OSWorld: 68.7% ($0.51) | `acp-codex/gpt-6.1-terra` |
-| sol#high | OpenAI | `critic` | FrontierCode: Cognition 34.8% ($0.65), AA 36.7% ($0.63) | `acp-codex/gpt-6.2-sol` |
-| sol#max | OpenAI | `specialist` after escalation | FrontierCode: Cognition 39.0% ($1.03), AA 40.6% ($1.13) | `acp-codex/gpt-6.2-sol` |
-| neon#high | Google | `specialist` after escalation | FrontierCode: Cognition 46.2% ($4.38) | `acp-agy/gemini-4-neon` |
+| sol#high | OpenAI | `critic` | FrontierCode: Cognition 39.7% ($0.88), AA 40.2% ($0.66) | `acp-codex/gpt-6.2-sol` |
+| sol#max | OpenAI | `specialist` after escalation | FrontierCode: Cognition 43.8% ($1.29), AA 44.4% ($1.30) | `acp-codex/gpt-6.2-sol` |
+| neon#high | Google | `specialist` after escalation; `critic` | FrontierCode: Cognition 46.2% ($4.38), AA 43.3% ($4.91) | `acp-agy/gemini-4-neon` |
 | orchestrator-neon#high | Google | Fusion orchestrator | - | `acp-agy/gemini-pro-orchestrator-neon` |
-| opus#high | Anthropic | Fusion orchestrator; `specialist` after escalation; `critic` of Sol work | FrontierCode: Cognition 34.5% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
+| opus#high | Anthropic | Fusion orchestrator; `specialist` after escalation; `critic` | FrontierCode: Cognition 36.3% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
 
 ## Escalation
 
