@@ -42,7 +42,7 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 | sol#high | OpenAI | `specialist` after escalation; `critic` | FrontierCode: Cognition 39.7% ($0.88), AA 40.2% ($0.66) | `acp-codex/gpt-6.2-sol` |
 | opus#high | Anthropic | Fusion orchestrator (only when `acp-agy` is unavailable); `specialist` after escalation; `critic` | FrontierCode: Cognition 36.3% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
 | neon#high | Google | `specialist` after escalation; `critic` | FrontierCode: Cognition 46.2% ($4.38), AA 43.3% ($4.91) | `acp-agy/gemini-4-neon` |
-| orchestrator-neon#high | Google | Fusion orchestrator (default) | - | `acp-agy/gemini-pro-orchestrator-neon` |
+| orchestrator-neon | Google | Fusion orchestrator (default) | - | `acp-agy/gemini-pro-orchestrator-neon` |
 
 ## Escalation
 
