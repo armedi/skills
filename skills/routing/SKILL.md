@@ -39,13 +39,16 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 | terra#high | OpenAI | `computer-use` | OSWorld: 68.7% ($0.51) | `acp-codex/gpt-6.1-terra` |
 | sol#high | OpenAI | `critic` | FrontierCode: Cognition 34.8% ($0.65), AA 36.7% ($0.63) | `acp-codex/gpt-6.2-sol` |
 | sol#max | OpenAI | `specialist` after escalation | FrontierCode: Cognition 39.0% ($1.03), AA 40.6% ($1.13) | `acp-codex/gpt-6.2-sol` |
-| opus#high | Anthropic | Fusion orchestrator; `specialist` after escalation when OpenAI is excluded; `critic` of Sol work | FrontierCode: Cognition 34.5% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
+| neon#high | Google | `specialist` after escalation | FrontierCode: Cognition 46.2% ($4.38) | `acp-agy/gemini-4-neon` |
+| orchestrator-neon#high | Google | Fusion orchestrator | - | `acp-agy/gemini-pro-orchestrator-neon` |
+| opus#high | Anthropic | Fusion orchestrator; `specialist` after escalation; `critic` of Sol work | FrontierCode: Cognition 34.5% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
 
 ## Escalation
 
 - Before escalating, split the task and spec the parts that pass the spec test.
-- A brief that fails on deepseek#max moves to sol#max, or to opus#high when OpenAI is excluded.
-  Past that, report the blocker.
+- Failed brief on `deepseek#max` → `opus#high` → `sol#max` → `neon#high`.
+  Try the orchestrator’s model last (orchestrator-neon counts as neon). Skip unavailable or
+  excluded providers. Report any unresolved blocker.
 - A spec that fails on `general` gets a sharper spec, or goes to another agent as a brief.
 
 ## Failures
