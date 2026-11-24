@@ -47,8 +47,8 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 
 - Before escalating, split the task and spec the parts that pass the spec test.
 - Failed brief on `deepseek#max` → `opus#high` → `sol#high` → `neon#high`.
-  Try the orchestrator’s model last (orchestrator-neon counts as neon). Skip unavailable or
-  excluded providers. Report any unresolved blocker.
+  Try the orchestrator’s model last. Skip unavailable or excluded providers.
+  Report any unresolved blocker.
 - A spec that fails on `general` gets a sharper spec, or goes to another agent as a brief.
 
 ## Failures
