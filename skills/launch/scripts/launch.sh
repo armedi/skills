@@ -7,14 +7,13 @@ set -eu
 
 usage() {
   cat >&2 <<'EOF'
-usage: launch.sh --model <provider/model#variant> --title <title> [--fusion] [--repo <dir>]
+usage: launch.sh --title <title> [--model <provider/model#variant>] [--repo <dir>]
                  [--on <host>:<path>] [--commit <sha>] <prompt>
        launch.sh --sessions [--repo <dir>] [--on <host>:<path>]
 EOF
 }
 
 mode=launch
-fusion=
 model=
 title=
 repo=.
@@ -27,7 +26,6 @@ have_prompt=
 while [ $# -gt 0 ]; do
   case $1 in
     --sessions) mode=sessions ;;
-    --fusion) fusion=1 ;;
     --model=*) model=${1#*=} ;;
     --title=*) title=${1#*=} ;;
     --repo=*) repo=${1#*=} ;;
@@ -63,9 +61,9 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$mode" = sessions ]; then
-  [ -z "$have_prompt$fusion$model$title$commit" ] || { usage; exit 2; }
+  [ -z "$have_prompt$model$title$commit" ] || { usage; exit 2; }
 else
-  [ -n "$have_prompt" ] && [ -n "$model" ] && [ -n "$title" ] || { usage; exit 2; }
+  [ -n "$have_prompt" ] && [ -n "$title" ] || { usage; exit 2; }
 fi
 
 if [ -n "$on" ]; then
@@ -81,8 +79,8 @@ if [ -n "$on" ]; then
   if [ "$mode" = sessions ]; then
     args="--sessions $args"
   else
-    args="$args --commit $(q "$commit") --model $(q "$model") --title $(q "$title")"
-    [ -z "$fusion" ] || args="$args --fusion"
+    args="$args --commit $(q "$commit") --title $(q "$title")"
+    [ -z "$model" ] || args="$args --model $(q "$model")"
     args="$args -- $(q "$prompt")"
   fi
 
@@ -208,31 +206,36 @@ name=$(printf '%s\n' "$title" | LC_ALL=C awk '
 ')
 [ -n "$name" ] || { echo "launch.sh: title has no letters or digits" >&2; exit 2; }
 
-provider=${model%%/*}
-ref=${model#*/}
-model_id=${ref%%#*}
-[ "$provider" != "$model" ] && [ -n "$model_id" ] || { usage; exit 2; }
-if [ "$model_id" = "$ref" ]; then
-  variant=
-else
-  variant=",\"variant\":$(json "${ref#*#}")"
-fi
+# Without --model the session stores none, and OpenCode resolves its default when the prompt runs.
+model_field=
+if [ -n "$model" ]; then
+  provider=${model%%/*}
+  ref=${model#*/}
+  model_id=${ref%%#*}
+  [ "$provider" != "$model" ] && [ -n "$model_id" ] || { usage; exit 2; }
+  if [ "$model_id" = "$ref" ]; then
+    variant=
+  else
+    variant=",\"variant\":$(json "${ref#*#}")"
+  fi
 
-# Validate before allocating: model errors otherwise surface asynchronously after success.
-opencode api model.list | jq -r --arg provider "$provider" --arg model "$model_id" \
-  --arg variant "$([ "$model_id" = "$ref" ] || printf '%s' "${ref#*#}")" '
-  (first(.data[]? | select(.providerID == $provider and .id == $model)) // null) as $match
-  | if $match == null then
-      "launch.sh: model \($provider)/\($model) is not in the catalog; see `opencode models`\n"
-      | halt_error(1)
-    else
-      [($match.variants // [])[] | .id] as $variants
-      | if $variant != "" and ($variants | index($variant)) == null then
-          "launch.sh: \($provider)/\($model) has no variant \($variant); it has: \(if $variants | length > 0 then $variants | join(" ") else "none" end)\n"
-          | halt_error(1)
-        else empty end
-    end
-  ' || exit 1
+  # Validate before allocating: model errors otherwise surface asynchronously after success.
+  opencode api model.list | jq -r --arg provider "$provider" --arg model "$model_id" \
+    --arg variant "$([ "$model_id" = "$ref" ] || printf '%s' "${ref#*#}")" '
+    (first(.data[]? | select(.providerID == $provider and .id == $model)) // null) as $match
+    | if $match == null then
+        "launch.sh: model \($provider)/\($model) is not in the catalog; see `opencode models`\n"
+        | halt_error(1)
+      else
+        [($match.variants // [])[] | .id] as $variants
+        | if $variant != "" and ($variants | index($variant)) == null then
+            "launch.sh: \($provider)/\($model) has no variant \($variant); it has: \(if $variants | length > 0 then $variants | join(" ") else "none" end)\n"
+            | halt_error(1)
+          else empty end
+      end
+    ' || exit 1
+  model_field=",\"model\":{\"providerID\":$(json "$provider"),\"id\":$(json "$model_id")$variant}"
+fi
 
 ! git -C "$repo" show-ref --verify --quiet "refs/heads/$name" ||
   { echo "launch.sh: branch $name already exists; choose another title" >&2; exit 2; }
@@ -255,18 +258,11 @@ if ! git -C "$worktree" switch --quiet -c "$name" "${commit:-HEAD}"; then
 fi
 echo "worktree ${display_host:+$display_host:}$worktree branch $name" >&2
 
-session_json=$(opencode api session.create -d "{\"title\":$(json "$title"),\"model\":{\"providerID\":$(json "$provider"),\"id\":$(json "$model_id")$variant},\"location\":{\"directory\":$(json "$worktree")}}" || true)
+session_json=$(opencode api session.create -d "{\"title\":$(json "$title")$model_field,\"location\":{\"directory\":$(json "$worktree")}}" || true)
 session=$(printf '%s' "$session_json" | jq -r '(.data // .).id // empty' 2>/dev/null || true)
 [ -n "$session" ] || { echo "launch.sh: session.create failed${session_json:+: $session_json}" >&2; exit 1; }
 
-# The skills attachment loads the skill; the @mention only marks it in the text.
-skills=
-if [ -n "$fusion" ]; then
-  prompt="@fusion $prompt"
-  skills=',"skills":[{"id":"fusion","mention":{"start":0,"end":7,"text":"@fusion"}}]'
-fi
-
-if ! opencode api session.prompt --param "sessionID=$session" -d "{\"text\":$(json "$prompt")$skills}" >/dev/null; then
+if ! opencode api session.prompt --param "sessionID=$session" -d "{\"text\":$(json "$prompt")}" >/dev/null; then
   opencode api session.remove --param "sessionID=$session" >/dev/null 2>&1 || true
   opencode api worktree.remove -d "{\"projectID\":$(json "$project"),\"directory\":$(json "$worktree"),\"force\":true}" >/dev/null 2>&1 || true
   echo "launch.sh: prompt failed; removed session $session and worktree $worktree" >&2
