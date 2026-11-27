@@ -2,10 +2,10 @@
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": true,
   "shell": "zsh",
-  "model": "commandcode/deepseek/deepseek-v4.1-flash#max",
+  "model": "commandcode/deepseek/deepseek-v4.1-flash",
   "agents": {
     "explore": {
-      "model": "commandcode/deepseek/deepseek-v4.1-flash#high",
+      "model": "commandcode/deepseek/deepseek-v4.1-flash",
     },
     "general": {
       "permissions": [
