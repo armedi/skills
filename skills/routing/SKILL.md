@@ -36,11 +36,11 @@ OSWorld 2.1 offline (multistep desktop tasks) as reported by
 
 | Model#effort | Maker | Agents | Benchmark | OpenCode model ID |
 |---|---|---|---|---|
-| deepseek#high | DeepSeek | `explore` | FrontierCode: Cognition 19.8% ($0.27), AA 16.8% ($0.35) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
-| deepseek#max | DeepSeek | `general`, `specialist` | FrontierCode: Cognition 20.2% ($0.38), AA 28.5% ($0.52) | `acp-cmd/deepseek/deepseek-v4.1-flash` |
-| terra#high | OpenAI | `computer-use` | OSWorld: 68.7% ($0.51) | `acp-codex/gpt-6.1-terra` |
-| sol#high | OpenAI | `specialist` after escalation; `critic` | FrontierCode: Cognition 39.7% ($0.88), AA 40.2% ($0.66) | `acp-codex/gpt-6.2-sol` |
-| opus#high | Anthropic | Fusion orchestrator (default); `specialist` after escalation; `critic` | FrontierCode: Cognition 36.3% ($2.42), AA 35.9% ($2.49) | `acp-claude/opus` |
+| deepseek#high | DeepSeek | `explore` | FrontierCode: Cognition 19.8% ($0.27), AA 16.8% ($0.35) | `commandcode/deepseek/deepseek-v4.1-flash` |
+| deepseek#max | DeepSeek | `general`, `specialist` | FrontierCode: Cognition 20.2% ($0.38), AA 28.5% ($0.52) | `commandcode/deepseek/deepseek-v4.1-flash` |
+| terra#high | OpenAI | `computer-use` | OSWorld: 68.7% ($0.51) | `openai/gpt-6.1-terra` |
+| sol#high | OpenAI | `specialist` after escalation; `critic` | FrontierCode: Cognition 39.7% ($0.88), AA 40.2% ($0.66) | `openai/gpt-6.2-sol` |
+| opus#high | Anthropic | Fusion orchestrator (default); `specialist` after escalation; `critic` | FrontierCode: Cognition 36.3% ($2.42), AA 35.9% ($2.49) | `claude-agent/opus` |
 | neon#high | Google | Fusion orchestrator; `specialist` after escalation; `critic` | FrontierCode: Cognition 46.2% ($4.38), AA 43.3% ($4.91) | `acp-agy/gemini-4-neon` |
 
 ## Escalation
