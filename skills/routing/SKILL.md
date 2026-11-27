@@ -3,17 +3,17 @@ name: routing
 description: "Model selection and dispatch for OpenCode subagents. Use before every subagent call."
 ---
 
-These are the user's standing model choices: always pass `model` as `<id>#<effort>`, with the ID
-from **Models**.
+These are the user's standing model choices: always pass `model` using the ID from **Models**.
+Append `#<effort>` only where **Dispatch** specifies an effort; a bare ID uses the default effort.
 
 ## Dispatch
 
 Every prompt stands alone: the outcome, the files and facts it needs, constraints, and completion
 criteria. End with: "Return proof that the work satisfies the request."
 
-`explore` runs on `deepseek#high`.
+`explore` runs on `deepseek`.
 
-A **peer task** goes to `general` on `deepseek#max`: a parallel piece of your work, or a sweep that
+A **peer task** goes to `general` on `deepseek`: a parallel piece of your work, or a sweep that
 would flood your context. Send only what a fresh agent can finish from the prompt and the tree;
 keep work that hangs on what you learned this session. If it fails, take the work back; its
 failure is evidence for your next `backstop` checkpoint.
@@ -35,12 +35,12 @@ the frontier chain.
 ## Models
 
 Use these unless the user names another. Verify the ID in the model catalog. Maker means creator,
-not serving provider. Only listed efforts are allowed. [`MODELS.md`](MODELS.md) has the benchmarks
-behind the chain order.
+not serving provider. Only listed effort overrides are allowed. [`MODELS.md`](MODELS.md) has the
+benchmarks behind the chain order.
 
-| Model | Efforts | Maker | OpenCode model ID |
+| Model | Effort override | Maker | OpenCode model ID |
 |---|---|---|---|
-| deepseek | high, max | DeepSeek | `commandcode/deepseek/deepseek-v4.1-flash` |
+| deepseek | — | DeepSeek | `commandcode/deepseek/deepseek-v4.1-flash` |
 | sol | high | OpenAI | `openai/gpt-6.2-sol` |
 | opus | high | Anthropic | `claude-agent/opus` |
 | neon | high | Google | `acp-agy/gemini-4-neon` |
